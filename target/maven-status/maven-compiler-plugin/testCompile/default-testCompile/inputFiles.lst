@@ -1,0 +1,15 @@
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/attendance/application/AttendanceServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/auth/application/AuthServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/auth/application/JwtServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/auth/application/PasswordServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/branch/application/BranchServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/company/application/CompanyServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/device/application/DeviceApiKeyServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/device/application/DeviceEventProcessorTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/device/application/DeviceEventServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/device/application/DeviceServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/device/application/EmployeeCredentialServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/device/application/HikvisionAdapterTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/employee/application/EmployeeServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/report/application/ExcelExportServiceTest.java
+/Users/macstore.uz/project/work-pulse/backend/src/test/java/uz/workpulse/report/application/ReportServiceTest.java

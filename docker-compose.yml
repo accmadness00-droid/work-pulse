@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: work-pulse-postgres
+    environment:
+      POSTGRES_DB: work_pulse
+      POSTGRES_USER: work_pulse
+      POSTGRES_PASSWORD: work_pulse
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U work_pulse -d work_pulse"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: work-pulse-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-work_pulse_redis}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: work-pulse-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://postgres:5432/work_pulse
+      DB_USERNAME: work_pulse
+      DB_PASSWORD: work_pulse
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-work_pulse_redis}
+      JWT_SECRET: ${JWT_SECRET:-work-pulse-dev-secret-change-me-min-32-chars}
+      TOKEN_BLACKLIST_BACKEND: redis
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+  face-service:
+    build:
+      context: ./face-service
+    container_name: work-pulse-face-service
+    ports:
+      - "5001:5001"
+    environment:
+      - FACE_MODEL=buffalo_l
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

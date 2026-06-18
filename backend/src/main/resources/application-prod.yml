@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  data:
+    redis:
+      password: ${REDIS_PASSWORD}
+
+app:
+  security:
+    token-blacklist:
+      backend: redis
+  device:
+    hikvision:
+      mock-enabled: false

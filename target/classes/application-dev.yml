@@ -1,0 +1,11 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+app:
+  device:
+    hikvision:
+      mock-enabled: true
+    alert-stream:
+      interval-ms: 15000
