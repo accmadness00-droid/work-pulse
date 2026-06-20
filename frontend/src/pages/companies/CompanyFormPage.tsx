@@ -1,9 +1,11 @@
 import { SaveOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, Button, Card, Form, Input, Space, Typography, message } from "antd";
+import { Alert, Button, Card, Form, Input, Select, Space, Typography, message } from "antd";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CreateCompanyRequest, companyApi } from "../../features/company/api/companyApi";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
+import { PHONE_NUMBER_PLACEHOLDER, phoneNumberRules } from "../../shared/validation/phoneNumber";
 
 type CompanyFormValues = CreateCompanyRequest & {
   address?: string;
@@ -15,6 +17,7 @@ export default function CompanyFormPage() {
   const queryClient = useQueryClient();
   const { id } = useParams();
   const isEdit = Boolean(id);
+  const planOptions = useLookupOptions("companyPlans");
 
   const companyQuery = useQuery({
     queryKey: ["companies", id],
@@ -59,7 +62,12 @@ export default function CompanyFormPage() {
       {companyQuery.isError ? <Alert type="error" message="Failed to load company" showIcon /> : null}
 
       <Card loading={companyQuery.isLoading && isEdit}>
-        <Form<CompanyFormValues> form={form} layout="vertical" onFinish={(values) => mutation.mutate(values)}>
+        <Form<CompanyFormValues>
+          form={form}
+          layout="vertical"
+          initialValues={{ plan: "FREE" }}
+          onFinish={(values) => mutation.mutate(values)}
+        >
           <Form.Item name="name" label="Name" rules={[{ required: true, message: "Company name is required" }]}>
             <Input placeholder="WorkPulse Demo LLC" />
           </Form.Item>
@@ -72,8 +80,13 @@ export default function CompanyFormPage() {
             <Input placeholder="123456789" />
           </Form.Item>
 
-          <Form.Item name="phone" label="Phone">
-            <Input placeholder="+998901234567" />
+          <Form.Item name="phone" label="Phone" rules={phoneNumberRules()}>
+            <Input
+              placeholder={PHONE_NUMBER_PLACEHOLDER}
+              inputMode="tel"
+              autoComplete="tel"
+              maxLength={16}
+            />
           </Form.Item>
 
           <Form.Item name="email" label="Email" rules={[{ type: "email", message: "Enter a valid email" }]}>
@@ -84,8 +97,12 @@ export default function CompanyFormPage() {
             <Input.TextArea placeholder="Tashkent, Uzbekistan" rows={3} />
           </Form.Item>
 
-          <Form.Item name="plan" label="Plan">
-            <Input placeholder="FREE" />
+          <Form.Item
+            name="plan"
+            label="Tarif"
+            extra="Kompaniya uchun mahsulot paketi. Hozircha limit va featurelarni ajratish uchun saqlanadi."
+          >
+            <Select placeholder="Tarifni tanlang" options={planOptions.options} loading={planOptions.isLoading} />
           </Form.Item>
 
           <Space>

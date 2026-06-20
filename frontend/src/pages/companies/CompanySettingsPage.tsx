@@ -44,7 +44,7 @@ export default function CompanySettingsPage() {
     <Space direction="vertical" size={16} className="page-stack">
       <div>
         <Typography.Title level={3}>Company Settings</Typography.Title>
-        <Typography.Text type="secondary">Update timezone, locale, plan, and payroll policy values.</Typography.Text>
+        <Typography.Text type="secondary">Update timezone, locale, tarif, and payroll policy values.</Typography.Text>
       </div>
 
       {settingsQuery.isError ? <Alert type="error" message="Failed to load settings" showIcon /> : null}
@@ -72,7 +72,12 @@ export default function CompanySettingsPage() {
             <Select options={localeOptions.options} loading={localeOptions.isLoading} />
           </Form.Item>
 
-          <Form.Item name="plan" label="Plan" rules={[{ required: true, message: "Plan is required" }]}>
+          <Form.Item
+            name="plan"
+            label="Tarif"
+            rules={[{ required: true, message: "Tarif is required" }]}
+            extra="Kompaniya uchun mahsulot paketi: FREE, MVP yoki PRO."
+          >
             <Select options={planOptions.options} loading={planOptions.isLoading} />
           </Form.Item>
 

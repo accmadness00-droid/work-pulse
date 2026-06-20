@@ -20,6 +20,7 @@ import {
   Space,
   Spin,
   Table,
+  Tabs,
   Tag,
   Typography,
   Upload,
@@ -257,12 +258,12 @@ export default function EmployeeDetailPage() {
     <Space direction="vertical" size={16} className="page-stack">
       <div className="page-toolbar">
         <div>
-          <Typography.Title level={3}>Employee Detail</Typography.Title>
-          <Typography.Text type="secondary">Profile, assignment, credentials, and related MVP placeholders.</Typography.Text>
+          <Typography.Title level={3}>Employee Profile</Typography.Title>
+          <Typography.Text type="secondary">Profile overview, attendance tools, Face ID, credentials, and work schedule.</Typography.Text>
         </div>
         {employee ? (
           <Button icon={<EditOutlined />} type="primary" onClick={() => navigate(`/employees/${employee.id}/edit`)}>
-            Edit
+            Edit profile
           </Button>
         ) : null}
       </div>
@@ -307,104 +308,141 @@ export default function EmployeeDetailPage() {
                 </Space>
               </Space>
             </div>
+          </Card>
 
-            <Descriptions
-              bordered
-              column={{ xs: 1, sm: 1, md: 2 }}
-              title={
-                <Space>
-                  <span>
-                    {employee.firstName} {employee.lastName}
-                  </span>
-                  <Tag color={employee.active ? "green" : "default"}>{employee.active ? "Active" : "Inactive"}</Tag>
-                </Space>
+          <Tabs
+            className="employee-workspace-tabs"
+            items={[
+              {
+                key: "profile",
+                label: "Profil",
+                children: (
+                  <Card>
+                    <Descriptions
+                      bordered
+                      column={{ xs: 1, sm: 1, md: 2 }}
+                      title={
+                        <Space>
+                          <span>
+                            {employee.firstName} {employee.lastName}
+                          </span>
+                          <Tag color={employee.active ? "green" : "default"}>{employee.active ? "Active" : "Inactive"}</Tag>
+                        </Space>
+                      }
+                    >
+                      <Descriptions.Item label="Employee number">{employee.employeeCode}</Descriptions.Item>
+                      <Descriptions.Item label="Employment type">{display(employee.employmentType)}</Descriptions.Item>
+                      <Descriptions.Item label="Company">
+                        {companiesQuery.data?.find((company) => company.id === employee.companyId)?.name ?? employee.companyId}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Branch">{branchQuery.data?.name ?? employee.branchId}</Descriptions.Item>
+                      <Descriptions.Item label="First name">{employee.firstName}</Descriptions.Item>
+                      <Descriptions.Item label="Last name">{employee.lastName}</Descriptions.Item>
+                      <Descriptions.Item label="Middle name">{display(employee.middleName)}</Descriptions.Item>
+                      <Descriptions.Item label="Position">{display(employee.position)}</Descriptions.Item>
+                      <Descriptions.Item label="Phone">{display(employee.phone)}</Descriptions.Item>
+                      <Descriptions.Item label="Login email">{display(employee.email)}</Descriptions.Item>
+                      <Descriptions.Item label="Hire date">{display(employee.hiredDate ?? employee.hireDate)}</Descriptions.Item>
+                      <Descriptions.Item label="Birth date">{display(employee.birthDate)}</Descriptions.Item>
+                      <Descriptions.Item label="Salary">{display(employee.salary)}</Descriptions.Item>
+                    </Descriptions>
+                  </Card>
+                )
+              },
+              {
+                key: "schedule",
+                label: "Ish jadvali",
+                children: <EmployeeScheduleCard employeeId={employee.id} />
+              },
+              {
+                key: "credentials",
+                label: "Ruxsat ma'lumotlari",
+                children: (
+                  <Card
+                    title="Credentials"
+                    extra={
+                      <Button icon={<PlusOutlined />} onClick={() => navigate(`/credentials/new?employeeId=${employee.id}`)}>
+                        Add Credential
+                      </Button>
+                    }
+                  >
+                    {credentialsQuery.isError ? <Alert type="error" message="Failed to load credentials" showIcon /> : null}
+                    <Table
+                      rowKey="id"
+                      columns={credentialColumns}
+                      dataSource={credentialsQuery.data ?? []}
+                      loading={credentialsQuery.isLoading}
+                      locale={{ emptyText: <Empty description="No credentials yet" /> }}
+                      pagination={false}
+                    />
+                  </Card>
+                )
+              },
+              {
+                key: "face",
+                label: "Face ID",
+                children: (
+                  <Card
+                    title="Face Enrollment"
+                    extra={
+                      <Space wrap>
+                        <Upload
+                          accept="image/png,image/jpeg,image/webp"
+                          beforeUpload={(file) => {
+                            faceEnrollMutation.mutate(file);
+                            return false;
+                          }}
+                          disabled={faceEnrollMutation.isPending}
+                          showUploadList={false}
+                        >
+                          <Button icon={<UploadOutlined />} loading={faceEnrollMutation.isPending}>
+                            Upload Face
+                          </Button>
+                        </Upload>
+                        <Button
+                          icon={<CameraOutlined />}
+                          type="primary"
+                          loading={faceEnrollMutation.isPending}
+                          onClick={() => setFaceCameraOpen(true)}
+                        >
+                          Enroll by Camera
+                        </Button>
+                      </Space>
+                    }
+                  >
+                    <Space direction="vertical" size={12} className="full-width">
+                      <Alert
+                        type="info"
+                        showIcon
+                        message="Upload a clear single-face photo. This creates the embedding used by Camera Check."
+                      />
+                      {faceProfilesQuery.isError ? <Alert type="error" message="Failed to load face profiles" showIcon /> : null}
+                      <Table
+                        rowKey="id"
+                        columns={faceProfileColumns}
+                        dataSource={faceProfilesQuery.data ?? []}
+                        loading={faceProfilesQuery.isLoading}
+                        locale={{ emptyText: <Empty description="No face profiles enrolled yet" /> }}
+                        pagination={false}
+                      />
+                    </Space>
+                  </Card>
+                )
+              },
+              {
+                key: "attendance",
+                label: "Davomat",
+                children: (
+                  <Card
+                    title="Attendance History"
+                    extra={<Button onClick={() => navigate(`/attendance/employee?employeeId=${employee.id}`)}>View Attendance History</Button>}
+                  >
+                    <Empty description="Open the attendance history page to review this employee's sessions." />
+                  </Card>
+                )
               }
-            >
-              <Descriptions.Item label="Employee code">{employee.employeeCode}</Descriptions.Item>
-              <Descriptions.Item label="Employment type">{display(employee.employmentType)}</Descriptions.Item>
-              <Descriptions.Item label="Company">
-                {companiesQuery.data?.find((company) => company.id === employee.companyId)?.name ?? employee.companyId}
-              </Descriptions.Item>
-              <Descriptions.Item label="Branch">{branchQuery.data?.name ?? employee.branchId}</Descriptions.Item>
-              <Descriptions.Item label="First name">{employee.firstName}</Descriptions.Item>
-              <Descriptions.Item label="Last name">{employee.lastName}</Descriptions.Item>
-              <Descriptions.Item label="Middle name">{display(employee.middleName)}</Descriptions.Item>
-              <Descriptions.Item label="Position">{display(employee.position)}</Descriptions.Item>
-              <Descriptions.Item label="Phone">{display(employee.phone)}</Descriptions.Item>
-              <Descriptions.Item label="Hire date">{display(employee.hiredDate ?? employee.hireDate)}</Descriptions.Item>
-              <Descriptions.Item label="Birth date">{display(employee.birthDate)}</Descriptions.Item>
-              <Descriptions.Item label="Salary">{display(employee.salary)}</Descriptions.Item>
-            </Descriptions>
-          </Card>
-
-          <EmployeeScheduleCard employeeId={employee.id} />
-
-          <Card
-            title="Face Enrollment"
-            extra={
-              <Space wrap>
-                <Upload
-                  accept="image/png,image/jpeg,image/webp"
-                  beforeUpload={(file) => {
-                    faceEnrollMutation.mutate(file);
-                    return false;
-                  }}
-                  disabled={faceEnrollMutation.isPending}
-                  showUploadList={false}
-                >
-                  <Button icon={<UploadOutlined />} loading={faceEnrollMutation.isPending}>
-                    Upload Face
-                  </Button>
-                </Upload>
-                <Button icon={<CameraOutlined />} type="primary" loading={faceEnrollMutation.isPending} onClick={() => setFaceCameraOpen(true)}>
-                  Enroll by Camera
-                </Button>
-              </Space>
-            }
-          >
-            <Space direction="vertical" size={12} className="full-width">
-              <Alert
-                type="info"
-                showIcon
-                message="Upload a clear single-face photo. This creates the embedding used by Camera Check."
-              />
-              {faceProfilesQuery.isError ? <Alert type="error" message="Failed to load face profiles" showIcon /> : null}
-              <Table
-                rowKey="id"
-                columns={faceProfileColumns}
-                dataSource={faceProfilesQuery.data ?? []}
-                loading={faceProfilesQuery.isLoading}
-                locale={{ emptyText: <Empty description="No face profiles enrolled yet" /> }}
-                pagination={false}
-              />
-            </Space>
-          </Card>
-
-          <Card
-            title="Attendance History"
-            extra={<Button onClick={() => navigate(`/attendance/employee?employeeId=${employee.id}`)}>View Attendance History</Button>}
-          >
-            <Empty description="Open the attendance history page to review this employee's sessions." />
-          </Card>
-
-          <Card
-            title="Credentials"
-            extra={
-              <Button icon={<PlusOutlined />} onClick={() => navigate(`/credentials/new?employeeId=${employee.id}`)}>
-                Add Credential
-              </Button>
-            }
-          >
-            {credentialsQuery.isError ? <Alert type="error" message="Failed to load credentials" showIcon /> : null}
-            <Table
-              rowKey="id"
-              columns={credentialColumns}
-              dataSource={credentialsQuery.data ?? []}
-              loading={credentialsQuery.isLoading}
-              locale={{ emptyText: <Empty description="No credentials yet" /> }}
-              pagination={false}
-            />
-          </Card>
+            ]}
+          />
 
           <CameraCaptureModal
             open={photoCameraOpen}

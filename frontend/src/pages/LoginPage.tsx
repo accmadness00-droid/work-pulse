@@ -48,7 +48,7 @@ export default function LoginPage() {
 
       <main className="login-form-panel">
         <div className="login-language">
-          <LanguageSwitcher />
+          <LanguageSwitcher compact />
         </div>
         <Card className="login-card">
           <div className="login-heading">

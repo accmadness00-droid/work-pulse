@@ -50,7 +50,7 @@ export default function CompaniesPage() {
       render: (value?: string | null) => value || "-"
     },
     {
-      title: "Plan",
+      title: "Tarif",
       dataIndex: "plan",
       key: "plan",
       render: (value?: string | null) => <Tag color="blue">{value || "FREE"}</Tag>

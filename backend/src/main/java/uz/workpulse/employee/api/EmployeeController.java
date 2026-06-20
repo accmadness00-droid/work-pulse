@@ -22,6 +22,7 @@ import uz.workpulse.employee.application.EmployeeService;
 import uz.workpulse.employee.dto.CreateEmployeeRequest;
 import uz.workpulse.employee.dto.EmployeeFilterRequest;
 import uz.workpulse.employee.dto.EmployeeResponse;
+import uz.workpulse.employee.dto.GeneratedEmployeeCodeResponse;
 import uz.workpulse.employee.dto.UpdateEmployeeRequest;
 import uz.workpulse.device.application.EmployeeHikvisionPhotoService;
 import uz.workpulse.device.dto.HikvisionPhotoSyncResponse;
@@ -57,6 +58,12 @@ public class EmployeeController {
     ) {
         EmployeeFilterRequest filter = new EmployeeFilterRequest(companyId, branchId, position, active, search);
         return ResponseEntity.ok(ApiResponse.success(employeeService.list(filter, pageable)));
+    }
+
+    @GetMapping("/next-code")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN','COMPANY_ADMIN')")
+    public ResponseEntity<ApiResponse<GeneratedEmployeeCodeResponse>> generateEmployeeCode() {
+        return ResponseEntity.ok(ApiResponse.success(employeeService.generateEmployeeCode()));
     }
 
     @GetMapping("/me")

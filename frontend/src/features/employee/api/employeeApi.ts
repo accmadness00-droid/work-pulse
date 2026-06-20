@@ -99,6 +99,10 @@ export type EmployeeFilterRequest = {
   size?: number;
 };
 
+export type GeneratedEmployeeCodeResponse = {
+  employeeCode: string;
+};
+
 function params(filter: EmployeeFilterRequest) {
   const searchParams = new URLSearchParams();
   Object.entries(filter).forEach(([key, value]) => {
@@ -134,6 +138,13 @@ export const employeeApi = {
   async getEmployee(id: string) {
     const response = await axiosInstance.get<ApiResponse<EmployeeResponse> | EmployeeResponse>(`/api/v1/employees/${id}`);
     return unwrap<EmployeeResponse>(response.data);
+  },
+
+  async generateEmployeeCode() {
+    const response = await axiosInstance.get<ApiResponse<GeneratedEmployeeCodeResponse> | GeneratedEmployeeCodeResponse>(
+      "/api/v1/employees/next-code"
+    );
+    return unwrap<GeneratedEmployeeCodeResponse>(response.data);
   },
 
   async createEmployee(request: CreateEmployeeRequest) {

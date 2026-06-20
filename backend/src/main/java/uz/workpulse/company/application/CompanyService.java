@@ -55,7 +55,7 @@ public class CompanyService implements CompanyFacade {
 
         Company company = new Company(request.name().trim(), inn);
         company.setLegalName(request.legalName());
-        company.setPhone(request.phone());
+        company.setPhone(normalizePhone(request.phone()));
         company.setEmail(request.email());
         company.setLogoUrl(request.logoUrl());
         if (StringUtils.hasText(request.plan())) {
@@ -83,7 +83,7 @@ public class CompanyService implements CompanyFacade {
         company.setName(request.name().trim());
         company.setInn(inn);
         company.setLegalName(request.legalName());
-        company.setPhone(request.phone());
+        company.setPhone(normalizePhone(request.phone()));
         company.setEmail(request.email());
         company.setLogoUrl(request.logoUrl());
         if (StringUtils.hasText(request.plan())) {
@@ -167,6 +167,10 @@ public class CompanyService implements CompanyFacade {
 
     private BigDecimal policyMultiplier(BigDecimal value, BigDecimal defaultValue) {
         return (value == null ? defaultValue : value).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private String normalizePhone(String phone) {
+        return StringUtils.hasText(phone) ? phone : null;
     }
 
     private void requireCompanyReadAccess(UUID companyId) {

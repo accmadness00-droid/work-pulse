@@ -126,6 +126,7 @@
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/employee/dto/EmployeeScheduleInfo.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/employee/dto/EmployeeScheduleResponse.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/employee/dto/EmployeeShortResponse.java
+/Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/employee/dto/GeneratedEmployeeCodeResponse.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/employee/dto/UpdateEmployeeRequest.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/employee/dto/UpdateEmployeeScheduleRequest.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/employee/dto/package-info.java
@@ -211,3 +212,5 @@
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/security/RedisTokenBlacklistService.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/security/SecurityContextHelper.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/security/TokenBlacklistService.java
+/Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/validation/PhoneNumberValidator.java
+/Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/validation/ValidPhoneNumber.java

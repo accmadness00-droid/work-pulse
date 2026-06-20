@@ -19,6 +19,9 @@ public class Branch extends BaseEntity {
 
     private String address;
 
+    @Column(length = 16)
+    private String phone;
+
     @Column(name = "latitude", precision = 9, scale = 6)
     private BigDecimal latitude;
 
@@ -58,6 +61,14 @@ public class Branch extends BaseEntity {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public BigDecimal getLatitude() {

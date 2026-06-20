@@ -74,7 +74,7 @@ class BranchServiceTest {
         });
         when(branchScheduleRepository.save(any(BranchSchedule.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        branchService.createBranch(companyId, new CreateBranchRequest("Main", "Tashkent", null, null, null));
+        branchService.createBranch(companyId, new CreateBranchRequest("Main", "Tashkent", null, null, null, null));
 
         ArgumentCaptor<BranchSchedule> scheduleCaptor = ArgumentCaptor.forClass(BranchSchedule.class);
         verify(branchScheduleRepository, org.mockito.Mockito.times(7)).save(scheduleCaptor.capture());

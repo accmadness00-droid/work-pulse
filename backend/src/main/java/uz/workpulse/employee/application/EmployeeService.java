@@ -1,9 +1,12 @@
 package uz.workpulse.employee.application;
 
 import java.security.SecureRandom;
+import java.util.Comparator;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ import uz.workpulse.employee.domain.Employee;
 import uz.workpulse.employee.dto.CreateEmployeeRequest;
 import uz.workpulse.employee.dto.EmployeeFilterRequest;
 import uz.workpulse.employee.dto.EmployeeResponse;
+import uz.workpulse.employee.dto.GeneratedEmployeeCodeResponse;
 import uz.workpulse.employee.dto.UpdateEmployeeRequest;
 import uz.workpulse.employee.infrastructure.EmployeeRepository;
 import uz.workpulse.shared.exception.BusinessException;
@@ -28,6 +32,9 @@ import uz.workpulse.shared.security.AuthPrincipal;
 
 @Service
 public class EmployeeService implements EmployeeFacade {
+
+    private static final String EMPLOYEE_CODE_PREFIX = "EMP";
+    private static final Pattern EMPLOYEE_CODE_PATTERN = Pattern.compile("^" + EMPLOYEE_CODE_PREFIX + "(\\d+)$");
 
     private final EmployeeRepository employeeRepository;
     private final EmployeeQueryService employeeQueryService;
@@ -71,7 +78,8 @@ public class EmployeeService implements EmployeeFacade {
         );
         employee.setUserId(resolveOrCreateUser(request));
         applyCreateFields(employee, request);
-        return EmployeeResponse.from(employeeRepository.save(employee));
+        syncLinkedUserScope(employee);
+        return toResponse(employeeRepository.save(employee));
     }
 
     @Transactional
@@ -90,14 +98,15 @@ public class EmployeeService implements EmployeeFacade {
         employee.setLastName(request.lastName().trim());
         employee.setEmployeeCode(normalizeEmployeeCode(request.employeeCode()));
         applyUpdateFields(employee, request);
-        return EmployeeResponse.from(employeeRepository.save(employee));
+        syncLinkedUserScope(employee);
+        return toResponse(employeeRepository.save(employee));
     }
 
     @Transactional(readOnly = true)
     public EmployeeResponse getById(UUID id) {
         Employee employee = getEmployeeOrThrow(id);
         requireEmployeeReadAccess(employee);
-        return EmployeeResponse.from(employee);
+        return toResponse(employee);
     }
 
     @Transactional(readOnly = true)
@@ -105,7 +114,7 @@ public class EmployeeService implements EmployeeFacade {
         AuthPrincipal principal = accessControlService.currentUser();
         Employee employee = employeeRepository.findByUserIdAndActiveTrue(principal.userId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.EMPLOYEE_NOT_FOUND));
-        return EmployeeResponse.from(employee);
+        return toResponse(employee);
     }
 
     @Transactional(readOnly = true)
@@ -113,7 +122,25 @@ public class EmployeeService implements EmployeeFacade {
         EmployeeFilterRequest scopedFilter = applyListScope(filter);
         requireEmployeeListAccess(scopedFilter);
         return employeeQueryService.findEmployees(scopedFilter, pageable)
-                .map(EmployeeResponse::from);
+                .map(this::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public GeneratedEmployeeCodeResponse generateEmployeeCode() {
+        requireEmployeeCodeGenerationAccess();
+        int nextNumber = employeeRepository.findEmployeeCodesByPrefix(EMPLOYEE_CODE_PREFIX)
+                .stream()
+                .map(this::employeeCodeNumber)
+                .flatMap(Optional::stream)
+                .max(Comparator.naturalOrder())
+                .orElse(0) + 1;
+
+        String employeeCode = formatEmployeeCode(nextNumber);
+        while (employeeRepository.existsByEmployeeCode(employeeCode)) {
+            nextNumber++;
+            employeeCode = formatEmployeeCode(nextNumber);
+        }
+        return new GeneratedEmployeeCodeResponse(employeeCode);
     }
 
     @Transactional
@@ -129,7 +156,7 @@ public class EmployeeService implements EmployeeFacade {
         Employee employee = getEmployeeOrThrow(id);
         requireEmployeeAdminWriteAccess(employee.getCompanyId(), employee.getBranchId());
         employee.activate();
-        return EmployeeResponse.from(employeeRepository.save(employee));
+        return toResponse(employeeRepository.save(employee));
     }
 
     @Transactional
@@ -137,7 +164,7 @@ public class EmployeeService implements EmployeeFacade {
         Employee employee = getActiveEmployeeOrThrow(id);
         requireEmployeeAdminWriteAccess(employee.getCompanyId(), employee.getBranchId());
         employee.deactivate();
-        return EmployeeResponse.from(employeeRepository.save(employee));
+        return toResponse(employeeRepository.save(employee));
     }
 
     @Transactional(readOnly = true)
@@ -145,7 +172,7 @@ public class EmployeeService implements EmployeeFacade {
         Employee employee = employeeRepository.findByEmployeeCode(normalizeEmployeeCode(employeeCode))
                 .orElseThrow(() -> new BusinessException(ErrorCode.EMPLOYEE_NOT_FOUND));
         requireEmployeeReadAccess(employee);
-        return EmployeeResponse.from(employee);
+        return toResponse(employee);
     }
 
     @Override
@@ -285,9 +312,32 @@ public class EmployeeService implements EmployeeFacade {
         return employeeCode.trim().toUpperCase();
     }
 
+    private Optional<Integer> employeeCodeNumber(String employeeCode) {
+        if (!StringUtils.hasText(employeeCode)) {
+            return Optional.empty();
+        }
+        Matcher matcher = EMPLOYEE_CODE_PATTERN.matcher(normalizeEmployeeCode(employeeCode));
+        if (!matcher.matches()) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(Integer.parseInt(matcher.group(1)));
+        } catch (NumberFormatException exception) {
+            return Optional.empty();
+        }
+    }
+
+    private String formatEmployeeCode(int number) {
+        return EMPLOYEE_CODE_PREFIX + String.format("%04d", number);
+    }
+
+    private String normalizePhone(String phone) {
+        return StringUtils.hasText(phone) ? phone : null;
+    }
+
     private void applyCreateFields(Employee employee, CreateEmployeeRequest request) {
         employee.setMiddleName(request.middleName());
-        employee.setPhone(request.phone());
+        employee.setPhone(normalizePhone(request.phone()));
         employee.setPhotoUrl(request.photoUrl());
         employee.setPosition(request.position());
         employee.setHiredDate(request.hiredDate());
@@ -297,15 +347,35 @@ public class EmployeeService implements EmployeeFacade {
     }
 
     private void applyUpdateFields(Employee employee, UpdateEmployeeRequest request) {
-        employee.setUserId(request.userId());
+        if (request.userId() != null) {
+            employee.setUserId(request.userId());
+        }
         employee.setMiddleName(request.middleName());
-        employee.setPhone(request.phone());
+        employee.setPhone(normalizePhone(request.phone()));
         employee.setPhotoUrl(request.photoUrl());
         employee.setPosition(request.position());
         employee.setHiredDate(request.hiredDate());
         employee.setBirthDate(request.birthDate());
         employee.setEmploymentType(request.employmentType() == null ? Employee.EmploymentType.FULL_TIME : request.employmentType());
         employee.setSalary(request.salary());
+    }
+
+    private EmployeeResponse toResponse(Employee employee) {
+        String email = employee.getUserId() == null
+                ? null
+                : userRepository.findById(employee.getUserId()).map(User::getEmail).orElse(null);
+        return EmployeeResponse.from(employee, email);
+    }
+
+    private void syncLinkedUserScope(Employee employee) {
+        if (employee.getUserId() == null) {
+            return;
+        }
+        userRepository.findById(employee.getUserId()).ifPresent(user -> {
+            user.setCompanyId(employee.getCompanyId());
+            user.setBranchId(employee.getBranchId());
+            userRepository.save(user);
+        });
     }
 
     private void requireEmployeeListAccess(EmployeeFilterRequest filter) {
@@ -350,6 +420,14 @@ public class EmployeeService implements EmployeeFacade {
         AuthPrincipal principal = accessControlService.currentUser();
         if (principal.role() == User.Role.SUPER_ADMIN || principal.role() == User.Role.COMPANY_ADMIN) {
             accessControlService.requireCompanyAccess(principal, companyId);
+            return;
+        }
+        throw new BusinessException(ErrorCode.ACCESS_DENIED);
+    }
+
+    private void requireEmployeeCodeGenerationAccess() {
+        AuthPrincipal principal = accessControlService.currentUser();
+        if (principal.role() == User.Role.SUPER_ADMIN || principal.role() == User.Role.COMPANY_ADMIN) {
             return;
         }
         throw new BusinessException(ErrorCode.ACCESS_DENIED);

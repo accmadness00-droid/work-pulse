@@ -37,6 +37,7 @@ a {
 
 /* Authentication */
 .login-page {
+  position: relative;
   min-height: 100vh;
   display: grid;
   grid-template-columns: minmax(360px, 0.9fr) minmax(520px, 1.1fr);
@@ -117,18 +118,43 @@ a {
   font-size: 13px;
 }
 
-.login-form-panel {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 48px 24px;
+.login-language {
+  position: absolute;
+  top: 28px;
+  right: 32px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border: 1px solid rgba(203, 213, 225, 0.72);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
 }
 
-.login-language {
-  width: min(100%, 440px);
+.login-language .language-switcher.compact {
+  width: 88px;
+}
+
+.login-language .ant-select-selector {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-weight: 700;
+}
+
+.login-language .ant-select-arrow {
+  color: #64748b;
+}
+
+.login-form-panel {
+  min-height: 100vh;
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
 }
 
 .login-card {
@@ -915,12 +941,12 @@ a {
 
   .login-form-panel {
     min-height: auto;
-    place-items: start center;
     padding: 40px 24px;
   }
 
   .login-language {
-    margin-bottom: 16px;
+    top: 18px;
+    right: 18px;
   }
 
   .app-header {

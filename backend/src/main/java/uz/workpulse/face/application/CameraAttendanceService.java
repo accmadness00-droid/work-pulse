@@ -13,6 +13,8 @@ import uz.workpulse.attendance.dto.AttendanceResponse;
 import uz.workpulse.attendance.dto.CheckInRequest;
 import uz.workpulse.attendance.dto.CheckOutRequest;
 import uz.workpulse.branch.application.BranchFacade;
+import uz.workpulse.auth.domain.User;
+import uz.workpulse.employee.application.EmployeeFacade;
 import uz.workpulse.face.domain.CameraAttendanceAction;
 import uz.workpulse.face.domain.CameraAttendanceLog;
 import uz.workpulse.face.domain.FaceMatchResult;
@@ -24,6 +26,8 @@ import uz.workpulse.shared.exception.BusinessException;
 import uz.workpulse.shared.exception.ErrorCode;
 import uz.workpulse.shared.file.FileStorageService;
 import uz.workpulse.shared.file.StoredFile;
+import uz.workpulse.shared.security.AccessControlService;
+import uz.workpulse.shared.security.AuthPrincipal;
 
 @Service
 @EnableConfigurationProperties(FaceProperties.class)
@@ -32,6 +36,8 @@ public class CameraAttendanceService {
     private final FileStorageService fileStorageService;
     private final AttendanceFacade attendanceFacade;
     private final BranchFacade branchFacade;
+    private final EmployeeFacade employeeFacade;
+    private final AccessControlService accessControlService;
     private final CameraAttendanceLogRepository logRepository;
     private final FaceProperties properties;
 
@@ -40,6 +46,8 @@ public class CameraAttendanceService {
             FileStorageService fileStorageService,
             AttendanceFacade attendanceFacade,
             BranchFacade branchFacade,
+            EmployeeFacade employeeFacade,
+            AccessControlService accessControlService,
             CameraAttendanceLogRepository logRepository,
             FaceProperties properties
     ) {
@@ -47,6 +55,8 @@ public class CameraAttendanceService {
         this.fileStorageService = fileStorageService;
         this.attendanceFacade = attendanceFacade;
         this.branchFacade = branchFacade;
+        this.employeeFacade = employeeFacade;
+        this.accessControlService = accessControlService;
         this.logRepository = logRepository;
         this.properties = properties;
     }
@@ -55,7 +65,7 @@ public class CameraAttendanceService {
     public CameraAttendanceResponse checkIn(CameraCheckInRequest request, String userAgent, String ipAddress) {
         validateLocationAccuracy(request.getAccuracyMeters());
         byte[] imageBytes = decodePhoto(request.getPhotoBase64());
-        FaceMatchResult match = faceRecognitionService.recognize(imageBytes);
+        FaceMatchResult match = recognizeForCurrentUser(imageBytes);
         validateGeofence(request.getBranchId(), request.getLatitude(), request.getLongitude());
 
         StoredFile storedPhoto = fileStorageService.saveAttendancePhoto(match.getEmployeeId(), request.getPhotoBase64(), "CHECK_IN");
@@ -79,7 +89,7 @@ public class CameraAttendanceService {
     public CameraAttendanceResponse checkOut(CameraCheckOutRequest request, String userAgent, String ipAddress) {
         validateLocationAccuracy(request.getAccuracyMeters());
         byte[] imageBytes = decodePhoto(request.getPhotoBase64());
-        FaceMatchResult match = faceRecognitionService.recognize(imageBytes);
+        FaceMatchResult match = recognizeForCurrentUser(imageBytes);
         validateGeofence(request.getBranchId(), request.getLatitude(), request.getLongitude());
 
         StoredFile storedPhoto = fileStorageService.saveAttendancePhoto(match.getEmployeeId(), request.getPhotoBase64(), "CHECK_OUT");
@@ -124,6 +134,16 @@ public class CameraAttendanceService {
         } catch (IllegalArgumentException ex) {
             throw new BusinessException(ErrorCode.ATTENDANCE_PHOTO_REQUIRED);
         }
+    }
+
+    private FaceMatchResult recognizeForCurrentUser(byte[] imageBytes) {
+        AuthPrincipal principal = accessControlService.currentUser();
+        if (principal.role() != User.Role.EMPLOYEE) {
+            return faceRecognitionService.recognize(imageBytes);
+        }
+        UUID employeeId = employeeFacade.findEmployeeIdByUserId(principal.userId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.EMPLOYEE_NOT_FOUND));
+        return faceRecognitionService.recognize(imageBytes, employeeId);
     }
 
     private void saveLog(UUID attendanceId, UUID employeeId, UUID branchId, CameraAttendanceAction action,

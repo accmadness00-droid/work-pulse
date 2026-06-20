@@ -33,6 +33,10 @@ public class FaceRecognitionService {
     }
 
     public FaceMatchResult recognize(byte[] imageBytes) {
+        return recognize(imageBytes, null);
+    }
+
+    public FaceMatchResult recognize(byte[] imageBytes, java.util.UUID expectedEmployeeId) {
         FaceEmbeddingResponse embeddingResponse = faceServiceClient.extractEmbedding(imageBytes);
         if (embeddingResponse == null || !embeddingResponse.isSuccess()) {
             throw faceError(embeddingResponse == null ? null : embeddingResponse.getError());
@@ -41,7 +45,9 @@ public class FaceRecognitionService {
             throw new BusinessException(ErrorCode.FACE_NOT_DETECTED);
         }
 
-        List<EmployeeFaceProfile> profiles = repository.findByActiveTrue();
+        List<EmployeeFaceProfile> profiles = expectedEmployeeId == null
+                ? repository.findByActiveTrue()
+                : repository.findByEmployeeIdAndActiveTrue(expectedEmployeeId);
         if (profiles.isEmpty()) {
             throw new BusinessException(ErrorCode.EMPLOYEE_FACE_PROFILE_NOT_FOUND);
         }

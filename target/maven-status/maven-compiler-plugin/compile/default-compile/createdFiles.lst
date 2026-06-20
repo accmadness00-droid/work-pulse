@@ -1,5 +1,7 @@
 uz/workpulse/device/application/EmployeeHikvisionPhotoService.class
 uz/workpulse/branch/api/package-info.class
+uz/workpulse/employee/dto/GeneratedEmployeeCodeResponse.class
+uz/workpulse/shared/validation/ValidPhoneNumber.class
 uz/workpulse/report/application/package-info.class
 uz/workpulse/attendance/dto/package-info.class
 uz/workpulse/auth/domain/Permission.class
@@ -27,6 +29,7 @@ uz/workpulse/device/adapter/dto/package-info.class
 uz/workpulse/payroll/dto/PayrollSummaryResponse.class
 uz/workpulse/payroll/api/PayrollController.class
 uz/workpulse/payroll/infrastructure/PayrollReadRepository.class
+uz/workpulse/shared/validation/PhoneNumberValidator.class
 uz/workpulse/attendance/application/AttendanceFacade$CameraVerificationAction.class
 uz/workpulse/company/application/package-info.class
 uz/workpulse/auth/application/PermissionCatalog.class

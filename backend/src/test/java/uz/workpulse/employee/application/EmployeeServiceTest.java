@@ -203,7 +203,7 @@ class EmployeeServiceTest {
     }
 
     private BranchResponse branchResponse(UUID branchId, UUID companyId) {
-        return new BranchResponse(branchId, companyId, "Main", "Tashkent", null, null, 100, true);
+        return new BranchResponse(branchId, companyId, "Main", "Tashkent", null, null, null, 100, true);
     }
 
     private void authenticateAs(User.Role role) {

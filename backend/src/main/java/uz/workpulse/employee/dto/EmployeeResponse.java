@@ -8,6 +8,7 @@ import uz.workpulse.employee.domain.Employee;
 public record EmployeeResponse(
         UUID id,
         UUID userId,
+        String email,
         UUID companyId,
         UUID branchId,
         String firstName,
@@ -25,9 +26,14 @@ public record EmployeeResponse(
 ) {
 
     public static EmployeeResponse from(Employee employee) {
+        return from(employee, null);
+    }
+
+    public static EmployeeResponse from(Employee employee, String email) {
         return new EmployeeResponse(
                 employee.getId(),
                 employee.getUserId(),
+                email,
                 employee.getCompanyId(),
                 employee.getBranchId(),
                 employee.getFirstName(),

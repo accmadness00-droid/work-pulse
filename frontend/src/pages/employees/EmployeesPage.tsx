@@ -176,10 +176,10 @@ export default function EmployeesPage() {
       render: (_, record) => (
         <Space>
           <Button icon={<EyeOutlined />} onClick={() => navigate(`/employees/${record.id}`)}>
-            View
+            Profile
           </Button>
           <Button icon={<EditOutlined />} onClick={() => navigate(`/employees/${record.id}/edit`)}>
-            Edit
+            Edit profile
           </Button>
           <Popconfirm
             title={record.active ? "Deactivate employee?" : "Activate employee?"}
@@ -238,7 +238,7 @@ export default function EmployeesPage() {
         />
         <Input.Search
           allowClear
-          placeholder="Search by name or code"
+          placeholder="Search by name or employee number"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           onSearch={(value) => {

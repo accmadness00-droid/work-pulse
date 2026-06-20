@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import uz.workpulse.auth.domain.User;
 import uz.workpulse.branch.domain.Branch;
 import uz.workpulse.branch.domain.BranchSchedule;
@@ -78,7 +79,14 @@ public class BranchService implements BranchFacade {
         companyService.getActiveCompanyOrThrow(companyId);
 
         Branch branch = new Branch(companyId, request.name().trim());
-        applyBranchFields(branch, request.address(), request.latitude(), request.longitude(), request.geofenceRadiusMeters());
+        applyBranchFields(
+                branch,
+                request.address(),
+                request.phone(),
+                request.latitude(),
+                request.longitude(),
+                request.geofenceRadiusMeters()
+        );
         Branch savedBranch = branchRepository.save(branch);
         createDefaultSchedule(savedBranch.getId());
         return BranchResponse.from(savedBranch);
@@ -95,7 +103,14 @@ public class BranchService implements BranchFacade {
     public BranchResponse updateBranch(UUID id, UpdateBranchRequest request) {
         Branch branch = getActiveBranchOrThrow(id);
         requireBranchWriteAccess(branch.getCompanyId(), id);
-        applyBranchFields(branch, request.address(), request.latitude(), request.longitude(), request.geofenceRadiusMeters());
+        applyBranchFields(
+                branch,
+                request.address(),
+                request.phone(),
+                request.latitude(),
+                request.longitude(),
+                request.geofenceRadiusMeters()
+        );
         branch.setName(request.name().trim());
         return BranchResponse.from(branchRepository.save(branch));
     }
@@ -203,8 +218,16 @@ public class BranchService implements BranchFacade {
         }
     }
 
-    private void applyBranchFields(Branch branch, String address, java.math.BigDecimal latitude, java.math.BigDecimal longitude, Integer geofenceRadiusMeters) {
+    private void applyBranchFields(
+            Branch branch,
+            String address,
+            String phone,
+            java.math.BigDecimal latitude,
+            java.math.BigDecimal longitude,
+            Integer geofenceRadiusMeters
+    ) {
         branch.setAddress(address);
+        branch.setPhone(StringUtils.hasText(phone) ? phone : null);
         branch.setLatitude(latitude);
         branch.setLongitude(longitude);
         branch.setGeofenceRadiusMeters(geofenceRadiusMeters);

@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { CreateBranchRequest, branchApi } from "../../features/branch/api/branchApi";
 import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { PHONE_NUMBER_PLACEHOLDER, phoneNumberRules } from "../../shared/validation/phoneNumber";
 
 type BranchFormValues = CreateBranchRequest;
 
@@ -90,8 +91,13 @@ export default function BranchFormPage() {
             <Input.TextArea placeholder="Tashkent, Uzbekistan" rows={3} />
           </Form.Item>
 
-          <Form.Item name="phone" label="Phone">
-            <Input placeholder="+998901234567" />
+          <Form.Item name="phone" label="Phone" rules={phoneNumberRules()}>
+            <Input
+              placeholder={PHONE_NUMBER_PLACEHOLDER}
+              inputMode="tel"
+              autoComplete="tel"
+              maxLength={16}
+            />
           </Form.Item>
 
           <div className="form-grid">

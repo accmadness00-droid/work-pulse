@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import uz.workpulse.auth.domain.User;
+import uz.workpulse.auth.infrastructure.UserRepository;
 import uz.workpulse.employee.domain.Employee;
 import uz.workpulse.employee.dto.EmployeeResponse;
 import uz.workpulse.employee.infrastructure.EmployeeRepository;
@@ -21,17 +23,20 @@ import uz.workpulse.shared.security.AccessControlService;
 public class EmployeePhotoService {
 
     private final EmployeeRepository employeeRepository;
+    private final UserRepository userRepository;
     private final EmployeeFacade employeeFacade;
     private final AccessControlService accessControlService;
     private final Path photoDirectory;
 
     public EmployeePhotoService(
             EmployeeRepository employeeRepository,
+            UserRepository userRepository,
             EmployeeFacade employeeFacade,
             AccessControlService accessControlService,
             @Value("${app.uploads.photo-dir:uploads/photos}") String photoDir
     ) {
         this.employeeRepository = employeeRepository;
+        this.userRepository = userRepository;
         this.employeeFacade = employeeFacade;
         this.accessControlService = accessControlService;
         this.photoDirectory = Path.of(photoDir);
@@ -60,7 +65,7 @@ public class EmployeePhotoService {
             Path target = photoDirectory.resolve(filename);
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
             employee.setPhotoUrl("/uploads/photos/" + filename);
-            return EmployeeResponse.from(employeeRepository.save(employee));
+            return toResponse(employeeRepository.save(employee));
         } catch (IOException ex) {
             throw new BusinessException(ErrorCode.INTERNAL_ERROR, "Unable to store employee photo");
         }
@@ -71,7 +76,14 @@ public class EmployeePhotoService {
         Employee employee = employeeRepository.findById(employeeId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.EMPLOYEE_NOT_FOUND));
         employee.setPhotoUrl(photoUrl);
-        return EmployeeResponse.from(employeeRepository.save(employee));
+        return toResponse(employeeRepository.save(employee));
+    }
+
+    private EmployeeResponse toResponse(Employee employee) {
+        String email = employee.getUserId() == null
+                ? null
+                : userRepository.findById(employee.getUserId()).map(User::getEmail).orElse(null);
+        return EmployeeResponse.from(employee, email);
     }
 
     private String resolveExtension(String originalFilename, String contentType) {

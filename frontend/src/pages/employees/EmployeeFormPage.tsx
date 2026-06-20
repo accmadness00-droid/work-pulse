@@ -1,8 +1,7 @@
-import { SaveOutlined, UploadOutlined, UserOutlined } from "@ant-design/icons";
+import { ReloadOutlined, SaveOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Alert,
-  Avatar,
   Button,
   Card,
   DatePicker,
@@ -13,7 +12,6 @@ import {
   Space,
   Switch,
   Typography,
-  Upload,
   message
 } from "antd";
 import dayjs, { Dayjs } from "dayjs";
@@ -22,15 +20,14 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { branchApi } from "../../features/branch/api/branchApi";
 import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
 import { useLookupOptions } from "../../shared/hooks/useLookups";
+import { PHONE_NUMBER_PLACEHOLDER, phoneNumberRules } from "../../shared/validation/phoneNumber";
 import {
   CreateEmployeeRequest,
   EmployeeResponse,
   EmploymentType,
   UpdateEmployeeRequest,
-  employeeApi,
-  employeePhotoUrl
+  employeeApi
 } from "../../features/employee/api/employeeApi";
-import EmployeeScheduleCard from "./EmployeeScheduleCard";
 
 type EmployeeFormValues = {
   companyId: string;
@@ -107,6 +104,13 @@ export default function EmployeeFormPage() {
     enabled: isEdit
   });
 
+  const generatedCodeQuery = useQuery({
+    queryKey: ["employees", "next-code"],
+    queryFn: () => employeeApi.generateEmployeeCode(),
+    enabled: !isEdit,
+    staleTime: 0
+  });
+
   useEffect(() => {
     if (!isEdit) {
       const initialCompanyId = searchParams.get("companyId") ?? companiesQuery.data?.[0]?.id;
@@ -138,6 +142,12 @@ export default function EmployeeFormPage() {
       });
     }
   }, [employeeQuery.data, form]);
+
+  useEffect(() => {
+    if (!isEdit && generatedCodeQuery.data?.employeeCode && !form.getFieldValue("employeeCode")) {
+      form.setFieldValue("employeeCode", generatedCodeQuery.data.employeeCode);
+    }
+  }, [form, generatedCodeQuery.data?.employeeCode, isEdit]);
 
   const branchesQuery = useQuery({
     queryKey: ["branches", selectedCompanyId],
@@ -172,16 +182,6 @@ export default function EmployeeFormPage() {
     }
   });
 
-  const photoMutation = useMutation({
-    mutationFn: (file: File) => employeeApi.uploadPhoto(id!, file),
-    onSuccess: (updatedEmployee) => {
-      message.success("Employee photo uploaded");
-      queryClient.setQueryData(["employees", "detail", id], updatedEmployee);
-      queryClient.invalidateQueries({ queryKey: ["employees"] });
-    },
-    onError: () => message.error("Failed to upload employee photo")
-  });
-
   const companyOptions = useMemo(
     () => (companiesQuery.data ?? []).map((company) => ({ value: company.id, label: company.name })),
     [companiesQuery.data]
@@ -195,47 +195,20 @@ export default function EmployeeFormPage() {
   return (
     <Space direction="vertical" size={16} className="page-stack">
       <div>
-        <Typography.Title level={3}>{isEdit ? "Edit Employee" : "Create Employee"}</Typography.Title>
-        <Typography.Text type="secondary">Fill employee profile and branch assignment details.</Typography.Text>
+        <Typography.Title level={3}>{isEdit ? "Edit Employee Profile" : "Create Employee"}</Typography.Title>
+        <Typography.Text type="secondary">
+          {isEdit
+            ? "Update master profile data only. Schedule, Face ID, credentials, and attendance are managed from the employee profile tabs."
+            : "Create the employee account and core profile. Extra setup is available after saving."}
+        </Typography.Text>
       </div>
 
       {companiesQuery.isError ? <Alert type="error" message="Failed to load companies" showIcon /> : null}
       {branchesQuery.isError ? <Alert type="error" message="Failed to load branches" showIcon /> : null}
       {employeeQuery.isError ? <Alert type="error" message="Failed to load employee" showIcon /> : null}
-
-      <Card title="Employee Photo" loading={employeeQuery.isLoading && isEdit}>
-        <div className="employee-profile-header">
-          <Avatar size={88} src={employeePhotoUrl(employeeQuery.data?.photoUrl)} icon={<UserOutlined />} />
-          <Space direction="vertical" size={4}>
-            <Typography.Text type="secondary">
-              Upload a PNG or JPG profile photo. This can later be used as the basis for Face ID enrollment.
-            </Typography.Text>
-            {isEdit ? (
-              <Upload
-                accept="image/png,image/jpeg"
-                beforeUpload={(file) => {
-                  photoMutation.mutate(file);
-                  return false;
-                }}
-                disabled={photoMutation.isPending}
-                showUploadList={false}
-              >
-                <Button icon={<UploadOutlined />} loading={photoMutation.isPending}>
-                  Upload Photo
-                </Button>
-              </Upload>
-            ) : (
-              <Alert
-                type="info"
-                showIcon
-                message="Create and save the employee first, then upload the employee photo from the edit page."
-              />
-            )}
-          </Space>
-        </div>
-      </Card>
-
-      <EmployeeScheduleCard employeeId={id} />
+      {generatedCodeQuery.isError && !isEdit ? (
+        <Alert type="warning" message="Employee number could not be generated. You can enter it manually." showIcon />
+      ) : null}
 
       <Card loading={(employeeQuery.isLoading && isEdit) || companiesQuery.isLoading}>
         <Form<EmployeeFormValues>
@@ -278,10 +251,31 @@ export default function EmployeeFormPage() {
 
             <Form.Item
               name="employeeCode"
-              label="Employee code"
-              rules={[{ required: true, message: "Employee code is required" }]}
+              label="Employee number"
+              rules={[{ required: true, message: "Employee number is required" }]}
             >
-              <Input placeholder="EMP001" />
+              <Input
+                placeholder="EMP0001"
+                disabled={!isEdit && generatedCodeQuery.isLoading}
+                addonAfter={
+                  isEdit ? null : (
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<ReloadOutlined />}
+                      loading={generatedCodeQuery.isFetching}
+                      onClick={async () => {
+                        const result = await generatedCodeQuery.refetch();
+                        if (result.data?.employeeCode) {
+                          form.setFieldValue("employeeCode", result.data.employeeCode);
+                        }
+                      }}
+                    >
+                      Generate
+                    </Button>
+                  )
+                }
+              />
             </Form.Item>
           </div>
 
@@ -290,8 +284,13 @@ export default function EmployeeFormPage() {
               <Input placeholder="Engineer" />
             </Form.Item>
 
-            <Form.Item name="phone" label="Phone">
-              <Input placeholder="+998901234567" />
+            <Form.Item name="phone" label="Phone" rules={phoneNumberRules()}>
+              <Input
+                placeholder={PHONE_NUMBER_PLACEHOLDER}
+                inputMode="tel"
+                autoComplete="tel"
+                maxLength={16}
+              />
             </Form.Item>
           </div>
 

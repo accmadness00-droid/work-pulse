@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 import uz.workpulse.employee.domain.Employee;
+import uz.workpulse.shared.validation.ValidPhoneNumber;
 
 public record CreateEmployeeRequest(
         UUID userId,
@@ -17,7 +18,7 @@ public record CreateEmployeeRequest(
         @NotBlank String firstName,
         @NotBlank String lastName,
         String middleName,
-        String phone,
+        @ValidPhoneNumber String phone,
         String photoUrl,
         String position,
         @NotBlank String employeeCode,

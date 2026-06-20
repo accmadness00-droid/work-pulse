@@ -7,5 +7,6 @@ import uz.workpulse.face.domain.EmployeeFaceProfile;
 
 public interface EmployeeFaceProfileRepository extends JpaRepository<EmployeeFaceProfile, UUID> {
     List<EmployeeFaceProfile> findByActiveTrue();
+    List<EmployeeFaceProfile> findByEmployeeIdAndActiveTrue(UUID employeeId);
     List<EmployeeFaceProfile> findByEmployeeIdOrderByCreatedAtDesc(UUID employeeId);
 }
