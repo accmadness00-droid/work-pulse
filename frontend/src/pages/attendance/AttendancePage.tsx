@@ -13,25 +13,10 @@ import {
   formatMinutes
 } from "../../features/attendance/api/attendanceApi";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
 import { employeeApi } from "../../features/employee/api/employeeApi";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 import AttendanceUpdateModal from "./AttendanceUpdateModal";
-
-const statusOptions: Array<{ value: AttendanceStatus; label: string }> = [
-  { value: "PRESENT", label: "Present" },
-  { value: "LATE", label: "Late" },
-  { value: "ABSENT", label: "Absent" },
-  { value: "LEAVE", label: "Leave" },
-  { value: "HOLIDAY", label: "Holiday" }
-];
-
-const methodOptions: Array<{ value: AttendanceMethod; label: string }> = [
-  { value: "GPS", label: "GPS" },
-  { value: "FACE_ID", label: "Face ID" },
-  { value: "MANUAL", label: "Manual" },
-  { value: "PIN", label: "PIN" },
-  { value: "DEVICE", label: "Device" }
-];
 
 function formatDateTime(value?: string | null) {
   return value ? dayjs(value).format("YYYY-MM-DD HH:mm") : "-";
@@ -57,10 +42,9 @@ export default function AttendancePage() {
   const [size, setSize] = useState(10);
   const [editing, setEditing] = useState<AttendanceResponse>();
 
-  const companiesQuery = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyApi.listCompanies
-  });
+  const companiesQuery = useAccessibleCompanies();
+  const statusOptions = useLookupOptions("attendanceStatuses");
+  const methodOptions = useLookupOptions("attendanceMethods");
 
   useEffect(() => {
     if (!companyId && companiesQuery.data?.length) {
@@ -255,8 +239,24 @@ export default function AttendancePage() {
         />
         <DatePicker placeholder="Date" value={date} onChange={(value) => setDate(value)} />
         <DatePicker.RangePicker value={range} onChange={(value) => setRange(value)} />
-        <Select allowClear placeholder="Status" value={status} onChange={setStatus} options={statusOptions} className="status-filter" />
-        <Select allowClear placeholder="Method" value={method} onChange={setMethod} options={methodOptions} className="status-filter" />
+        <Select
+          allowClear
+          placeholder="Status"
+          value={status}
+          onChange={setStatus}
+          options={statusOptions.options}
+          loading={statusOptions.isLoading}
+          className="status-filter"
+        />
+        <Select
+          allowClear
+          placeholder="Method"
+          value={method}
+          onChange={setMethod}
+          options={methodOptions.options}
+          loading={methodOptions.isLoading}
+          className="status-filter"
+        />
       </div>
 
       {attendanceQuery.isError ? <Alert type="error" message="Failed to load attendance" showIcon /> : null}

@@ -29,7 +29,6 @@ import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
 import { EmployeeFaceProfileResponse, faceApi } from "../../features/face/api/faceApi";
 import {
   EmployeeCredentialResponse,
@@ -37,6 +36,7 @@ import {
 } from "../../features/employeeCredential/api/employeeCredentialApi";
 import { employeeApi, employeePhotoUrl } from "../../features/employee/api/employeeApi";
 import CameraCaptureModal from "../../shared/components/CameraCaptureModal";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
 import EmployeeScheduleCard from "./EmployeeScheduleCard";
 
 function display(value?: string | number | null) {
@@ -49,17 +49,12 @@ export default function EmployeeDetailPage() {
   const { id } = useParams();
   const [photoCameraOpen, setPhotoCameraOpen] = useState(false);
   const [faceCameraOpen, setFaceCameraOpen] = useState(false);
+  const companiesQuery = useAccessibleCompanies();
 
   const employeeQuery = useQuery({
     queryKey: ["employees", "detail", id],
     queryFn: () => employeeApi.getEmployee(id!),
     enabled: Boolean(id)
-  });
-
-  const companyQuery = useQuery({
-    queryKey: ["companies", employeeQuery.data?.companyId],
-    queryFn: () => companyApi.getCompany(employeeQuery.data!.companyId),
-    enabled: Boolean(employeeQuery.data?.companyId)
   });
 
   const branchQuery = useQuery({
@@ -327,7 +322,9 @@ export default function EmployeeDetailPage() {
             >
               <Descriptions.Item label="Employee code">{employee.employeeCode}</Descriptions.Item>
               <Descriptions.Item label="Employment type">{display(employee.employmentType)}</Descriptions.Item>
-              <Descriptions.Item label="Company">{companyQuery.data?.name ?? employee.companyId}</Descriptions.Item>
+              <Descriptions.Item label="Company">
+                {companiesQuery.data?.find((company) => company.id === employee.companyId)?.name ?? employee.companyId}
+              </Descriptions.Item>
               <Descriptions.Item label="Branch">{branchQuery.data?.name ?? employee.branchId}</Descriptions.Item>
               <Descriptions.Item label="First name">{employee.firstName}</Descriptions.Item>
               <Descriptions.Item label="Last name">{employee.lastName}</Descriptions.Item>

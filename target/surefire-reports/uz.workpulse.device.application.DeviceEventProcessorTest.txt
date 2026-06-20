@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: uz.workpulse.device.application.DeviceEventProcessorTest
 -------------------------------------------------------------------------------
-Tests run: 6, Failures: 0, Errors: 6, Skipped: 0, Time elapsed: 0.004 s <<< FAILURE! -- in uz.workpulse.device.application.DeviceEventProcessorTest
+Tests run: 6, Failures: 0, Errors: 6, Skipped: 0, Time elapsed: 0.006 s <<< FAILURE! -- in uz.workpulse.device.application.DeviceEventProcessorTest
 uz.workpulse.device.application.DeviceEventProcessorTest.duplicateInMarksProcessedWithoutRetry -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
@@ -136,7 +136,7 @@ Caused by: java.lang.IllegalStateException: Could not self-attach to current VM 
 	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.<clinit>(InlineDelegateByteBuddyMockMaker.java:133)
 	... 14 more
 
-uz.workpulse.device.application.DeviceEventProcessorTest.unknownDirectionMarksProcessingError -- Time elapsed: 0.001 s <<< ERROR!
+uz.workpulse.device.application.DeviceEventProcessorTest.unknownDirectionMarksProcessingError -- Time elapsed: 0 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)
@@ -203,7 +203,7 @@ Caused by: java.lang.IllegalStateException: Could not self-attach to current VM 
 	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.<clinit>(InlineDelegateByteBuddyMockMaker.java:133)
 	... 14 more
 
-uz.workpulse.device.application.DeviceEventProcessorTest.batchProcessesUnprocessedEvents -- Time elapsed: 0 s <<< ERROR!
+uz.workpulse.device.application.DeviceEventProcessorTest.batchProcessesUnprocessedEvents -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)

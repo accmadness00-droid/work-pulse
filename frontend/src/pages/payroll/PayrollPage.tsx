@@ -6,9 +6,10 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
 import { payrollApi, PayrollEmployeeRow } from "../../features/payroll/api/payrollApi";
 import { formatMinutes } from "../../features/report/api/reportApi";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { ReportNavigation } from "../reports/reportComponents";
 
 function money(value?: number | null) {
   return new Intl.NumberFormat("uz-UZ", {
@@ -36,7 +37,7 @@ export default function PayrollPage() {
   const [branchId, setBranchId] = useState<string>();
   const [month, setMonth] = useState(dayjs());
 
-  const companiesQuery = useQuery({ queryKey: ["companies"], queryFn: companyApi.listCompanies });
+  const companiesQuery = useAccessibleCompanies();
 
   useEffect(() => {
     if (!companyId && companiesQuery.data?.length) {
@@ -189,6 +190,8 @@ export default function PayrollPage() {
           Payroll Settings
         </Button>
       </div>
+
+      <ReportNavigation />
 
       <Card>
         <div className="filter-bar wrap">

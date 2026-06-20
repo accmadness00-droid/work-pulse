@@ -12,19 +12,7 @@ import {
   DeviceEventResponse,
   deviceEventApi
 } from "../../features/deviceEvent/api/deviceEventApi";
-
-const directionOptions: Array<{ value: DeviceEventDirection; label: string }> = [
-  { value: "IN", label: "IN" },
-  { value: "OUT", label: "OUT" },
-  { value: "UNKNOWN", label: "UNKNOWN" }
-];
-
-const authTypeOptions: Array<{ value: DeviceEventAuthType; label: string }> = [
-  { value: "CARD", label: "Card" },
-  { value: "FACE", label: "Face" },
-  { value: "FINGERPRINT", label: "Fingerprint" },
-  { value: "QR", label: "QR" }
-];
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 
 function processedTag(processed: boolean, hasError?: boolean) {
   if (processed) {
@@ -50,6 +38,9 @@ export default function DeviceEventsPage() {
   const [authType, setAuthType] = useState<DeviceEventAuthType>();
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
+  const directionOptions = useLookupOptions("deviceEventDirections");
+  const authTypeOptions = useLookupOptions("deviceEventAuthTypes");
+  const processedStatusOptions = useLookupOptions("deviceEventProcessedStatuses");
 
   const devicesQuery = useQuery({
     queryKey: ["devices", "event-select"],
@@ -224,15 +215,29 @@ export default function DeviceEventsPage() {
             setProcessed(value);
             setPage(1);
           }}
-          options={[
-            { value: true, label: "Processed" },
-            { value: false, label: "Unprocessed" }
-          ]}
+          options={processedStatusOptions.options}
+          loading={processedStatusOptions.isLoading}
           className="status-filter"
         />
         <DatePicker.RangePicker showTime value={range} onChange={(value) => setRange(value)} />
-        <Select allowClear placeholder="Direction" value={direction} onChange={setDirection} options={directionOptions} className="status-filter" />
-        <Select allowClear placeholder="Auth type" value={authType} onChange={setAuthType} options={authTypeOptions} className="status-filter" />
+        <Select
+          allowClear
+          placeholder="Direction"
+          value={direction}
+          onChange={setDirection}
+          options={directionOptions.options}
+          loading={directionOptions.isLoading}
+          className="status-filter"
+        />
+        <Select
+          allowClear
+          placeholder="Auth type"
+          value={authType}
+          onChange={setAuthType}
+          options={authTypeOptions.options}
+          loading={authTypeOptions.isLoading}
+          className="status-filter"
+        />
       </div>
 
       {eventsQuery.isError ? <Alert type="error" message="Failed to load device events" showIcon /> : null}

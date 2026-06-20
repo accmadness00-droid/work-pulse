@@ -5,8 +5,11 @@ import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
 import { EmployeeResponse, employeeApi, employeePhotoUrl } from "../../features/employee/api/employeeApi";
+import { hasPermission } from "../../shared/auth/authorization";
+import { useAuth } from "../../shared/auth/useAuth";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 
 function EmployeePhoto({ photoUrl }: { photoUrl?: string | null }) {
   const [failed, setFailed] = useState(false);
@@ -37,6 +40,8 @@ function EmployeePhoto({ photoUrl }: { photoUrl?: string | null }) {
 export default function EmployeesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const canCreateEmployee = hasPermission(user, "CREATE_EMPLOYEES");
   const [companyId, setCompanyId] = useState<string>();
   const [branchId, setBranchId] = useState<string>();
   const [search, setSearch] = useState("");
@@ -44,10 +49,8 @@ export default function EmployeesPage() {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
 
-  const companiesQuery = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyApi.listCompanies
-  });
+  const companiesQuery = useAccessibleCompanies();
+  const activeStatusOptions = useLookupOptions("employeeActiveStatuses");
 
   useEffect(() => {
     if (!companyId && companiesQuery.data?.length) {
@@ -200,14 +203,16 @@ export default function EmployeesPage() {
           <Typography.Title level={3}>Employees</Typography.Title>
           <Typography.Text type="secondary">Manage employee profiles and branch assignments.</Typography.Text>
         </div>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          disabled={!companyId}
-          onClick={() => navigate(companyId ? `/employees/new?companyId=${companyId}` : "/employees/new")}
-        >
-          Create Employee
-        </Button>
+        {canCreateEmployee ? (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            disabled={!companyId}
+            onClick={() => navigate(companyId ? `/employees/new?companyId=${companyId}` : "/employees/new")}
+          >
+            Create Employee
+          </Button>
+        ) : null}
       </div>
 
       <div className="filter-bar wrap">
@@ -248,10 +253,8 @@ export default function EmployeesPage() {
             setActive(value);
             setPage(1);
           }}
-          options={[
-            { value: true, label: "Active" },
-            { value: false, label: "Inactive" }
-          ]}
+          options={activeStatusOptions.options}
+          loading={activeStatusOptions.isLoading}
           className="status-filter"
         />
       </div>

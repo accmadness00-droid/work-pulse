@@ -5,30 +5,16 @@ import dayjs, { Dayjs } from "dayjs";
 import { useNavigate } from "react-router-dom";
 import { deviceApi } from "../../features/device/api/deviceApi";
 import {
-  DeviceEventAuthType,
-  DeviceEventDirection,
   IngestDeviceEventRequest,
   deviceEventApi
 } from "../../features/deviceEvent/api/deviceEventApi";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 
 type FormValues = Omit<IngestDeviceEventRequest, "eventTime" | "rawPayload"> & {
   selectedDeviceId?: string;
   eventTime: Dayjs;
   rawPayload?: string;
 };
-
-const directionOptions: Array<{ value: DeviceEventDirection; label: string }> = [
-  { value: "IN", label: "IN" },
-  { value: "OUT", label: "OUT" },
-  { value: "UNKNOWN", label: "UNKNOWN" }
-];
-
-const authTypeOptions: Array<{ value: DeviceEventAuthType; label: string }> = [
-  { value: "CARD", label: "Card" },
-  { value: "FACE", label: "Face" },
-  { value: "FINGERPRINT", label: "Fingerprint" },
-  { value: "QR", label: "QR" }
-];
 
 function trim(value?: string) {
   const next = value?.trim();
@@ -49,6 +35,8 @@ function parseRawPayload(value?: string) {
 export default function IngestDeviceEventPage() {
   const [form] = Form.useForm<FormValues>();
   const navigate = useNavigate();
+  const directionOptions = useLookupOptions("deviceEventDirections");
+  const authTypeOptions = useLookupOptions("deviceEventAuthTypes");
 
   const devicesQuery = useQuery({
     queryKey: ["devices", "event-ingest-select"],
@@ -131,10 +119,10 @@ export default function IngestDeviceEventPage() {
 
           <div className="form-grid two">
             <Form.Item name="direction" label="Direction" rules={[{ required: true, message: "Direction is required" }]}>
-              <Select options={directionOptions} />
+              <Select options={directionOptions.options} loading={directionOptions.isLoading} />
             </Form.Item>
             <Form.Item name="authType" label="Auth type">
-              <Select allowClear options={authTypeOptions} />
+              <Select allowClear options={authTypeOptions.options} loading={authTypeOptions.isLoading} />
             </Form.Item>
           </div>
 

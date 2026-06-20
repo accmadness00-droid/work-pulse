@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: uz.workpulse.report.application.ExcelExportServiceTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0 s <<< FAILURE! -- in uz.workpulse.report.application.ExcelExportServiceTest
-uz.workpulse.report.application.ExcelExportServiceTest.excelExportReturnsNonEmptyXlsxBytes -- Time elapsed: 0 s <<< ERROR!
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.002 s <<< FAILURE! -- in uz.workpulse.report.application.ExcelExportServiceTest
+uz.workpulse.report.application.ExcelExportServiceTest.excelExportReturnsNonEmptyXlsxBytes -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)

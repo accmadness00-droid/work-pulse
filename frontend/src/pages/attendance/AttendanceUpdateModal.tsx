@@ -6,6 +6,7 @@ import {
   AttendanceStatus,
   UpdateAttendanceRequest
 } from "../../features/attendance/api/attendanceApi";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 
 type FormValues = {
   checkInTime?: Dayjs;
@@ -21,14 +22,6 @@ type AttendanceUpdateModalProps = {
   onCancel: () => void;
   onSubmit: (values: UpdateAttendanceRequest) => void;
 };
-
-const statusOptions: Array<{ value: AttendanceStatus; label: string }> = [
-  { value: "PRESENT", label: "Present" },
-  { value: "LATE", label: "Late" },
-  { value: "ABSENT", label: "Absent" },
-  { value: "LEAVE", label: "Leave" },
-  { value: "HOLIDAY", label: "Holiday" }
-];
 
 function toDayjs(value?: string | null) {
   return value ? dayjs(value) : undefined;
@@ -46,6 +39,7 @@ export default function AttendanceUpdateModal({
   onSubmit
 }: AttendanceUpdateModalProps) {
   const [form] = Form.useForm<FormValues>();
+  const statusOptions = useLookupOptions("attendanceStatuses");
 
   useEffect(() => {
     if (attendance && open) {
@@ -87,9 +81,9 @@ export default function AttendanceUpdateModal({
           <DatePicker showTime className="full-width" />
         </Form.Item>
 
-        <Form.Item name="status" label="Status">
-          <Select options={statusOptions} />
-        </Form.Item>
+      <Form.Item name="status" label="Status">
+        <Select options={statusOptions.options} loading={statusOptions.isLoading} />
+      </Form.Item>
 
         <Form.Item name="note" label="Note">
           <Input.TextArea rows={3} />

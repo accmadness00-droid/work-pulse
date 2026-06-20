@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: uz.workpulse.branch.application.BranchServiceTest
 -------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.004 s <<< FAILURE! -- in uz.workpulse.branch.application.BranchServiceTest
+Tests run: 3, Failures: 0, Errors: 3, Skipped: 0, Time elapsed: 0.003 s <<< FAILURE! -- in uz.workpulse.branch.application.BranchServiceTest
 uz.workpulse.branch.application.BranchServiceTest.createBranchCreatesDefaultSchedule -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
@@ -69,7 +69,7 @@ Caused by: java.lang.IllegalStateException: Could not self-attach to current VM 
 	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.<clinit>(InlineDelegateByteBuddyMockMaker.java:133)
 	... 14 more
 
-uz.workpulse.branch.application.BranchServiceTest.isWithinGeofenceReturnsTrueAndFalse -- Time elapsed: 0 s <<< ERROR!
+uz.workpulse.branch.application.BranchServiceTest.isWithinGeofenceReturnsTrueAndFalse -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)
@@ -136,7 +136,7 @@ Caused by: java.lang.IllegalStateException: Could not self-attach to current VM 
 	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.<clinit>(InlineDelegateByteBuddyMockMaker.java:133)
 	... 14 more
 
-uz.workpulse.branch.application.BranchServiceTest.getScheduleForDateReturnsCorrectDay -- Time elapsed: 0 s <<< ERROR!
+uz.workpulse.branch.application.BranchServiceTest.getScheduleForDateReturnsCorrectDay -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)

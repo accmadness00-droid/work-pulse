@@ -4,8 +4,9 @@ import { Alert, Button, Card, Form, Input, Select, Space, Typography, message } 
 import { useEffect, useState } from "react";
 import { AttendanceMethod, attendanceApi } from "../../features/attendance/api/attendanceApi";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
 import { employeeApi } from "../../features/employee/api/employeeApi";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 
 type ManualCheckValues = {
   companyId?: string;
@@ -15,24 +16,15 @@ type ManualCheckValues = {
   note?: string;
 };
 
-const methodOptions: Array<{ value: AttendanceMethod; label: string }> = [
-  { value: "MANUAL", label: "Manual" },
-  { value: "GPS", label: "GPS" },
-  { value: "PIN", label: "PIN" },
-  { value: "FACE_ID", label: "Face ID" },
-  { value: "DEVICE", label: "Device" }
-];
-
 export default function ManualCheckPage() {
   const [form] = Form.useForm<ManualCheckValues>();
   const [companyId, setCompanyId] = useState<string>();
   const [branchId, setBranchId] = useState<string>();
   const [employeeSearch, setEmployeeSearch] = useState("");
 
-  const companiesQuery = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyApi.listCompanies
-  });
+  const companiesQuery = useAccessibleCompanies();
+  const methodOptions = useLookupOptions("attendanceMethods");
+  const manualMethodOptions = methodOptions.options.filter((option) => option.value !== "WEB_CAMERA");
 
   useEffect(() => {
     if (!companyId && companiesQuery.data?.length) {
@@ -138,7 +130,7 @@ export default function ManualCheckPage() {
           </Form.Item>
 
           <Form.Item name="method" label="Method" rules={[{ required: true, message: "Method is required" }]}>
-            <Select options={methodOptions} />
+            <Select options={manualMethodOptions} loading={methodOptions.isLoading} />
           </Form.Item>
 
           <Form.Item name="note" label="Note">

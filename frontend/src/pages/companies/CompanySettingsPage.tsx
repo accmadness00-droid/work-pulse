@@ -4,12 +4,16 @@ import { Alert, Button, Card, Form, InputNumber, Select, Space, Switch, Typograp
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { UpdateCompanySettingsRequest, companyApi } from "../../features/company/api/companyApi";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 
 export default function CompanySettingsPage() {
   const [form] = Form.useForm<UpdateCompanySettingsRequest>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { id } = useParams();
+  const timezoneOptions = useLookupOptions("companyTimezones");
+  const localeOptions = useLookupOptions("companyLocales");
+  const planOptions = useLookupOptions("companyPlans");
 
   const settingsQuery = useQuery({
     queryKey: ["companies", id, "settings"],
@@ -61,32 +65,15 @@ export default function CompanySettingsPage() {
           onFinish={(values) => mutation.mutate(values)}
         >
           <Form.Item name="timezone" label="Timezone" rules={[{ required: true, message: "Timezone is required" }]}>
-            <Select
-              options={[
-                { value: "Asia/Tashkent", label: "Asia/Tashkent" },
-                { value: "UTC", label: "UTC" }
-              ]}
-            />
+            <Select options={timezoneOptions.options} loading={timezoneOptions.isLoading} />
           </Form.Item>
 
           <Form.Item name="locale" label="Locale" rules={[{ required: true, message: "Locale is required" }]}>
-            <Select
-              options={[
-                { value: "uz-UZ", label: "uz-UZ" },
-                { value: "ru-RU", label: "ru-RU" },
-                { value: "en-US", label: "en-US" }
-              ]}
-            />
+            <Select options={localeOptions.options} loading={localeOptions.isLoading} />
           </Form.Item>
 
           <Form.Item name="plan" label="Plan" rules={[{ required: true, message: "Plan is required" }]}>
-            <Select
-              options={[
-                { value: "FREE", label: "FREE" },
-                { value: "MVP", label: "MVP" },
-                { value: "PRO", label: "PRO" }
-              ]}
-            />
+            <Select options={planOptions.options} loading={planOptions.isLoading} />
           </Form.Item>
 
           <div className="form-grid two">

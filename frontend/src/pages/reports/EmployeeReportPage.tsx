@@ -5,7 +5,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { useState } from "react";
 import { employeeApi } from "../../features/employee/api/employeeApi";
 import { reportApi } from "../../features/report/api/reportApi";
-import { ReportSessionTable, SummaryCards } from "./reportComponents";
+import { ReportNavigation, ReportSessionTable, SummaryCards } from "./reportComponents";
 
 export default function EmployeeReportPage() {
   const [employeeSearch, setEmployeeSearch] = useState("");
@@ -43,6 +43,8 @@ export default function EmployeeReportPage() {
           Export Employee Excel
         </Button>
       </div>
+
+      <ReportNavigation />
 
       <Card>
         <div className="filter-bar wrap">

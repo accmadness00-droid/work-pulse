@@ -5,7 +5,10 @@ import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
+import { hasPermission } from "../../shared/auth/authorization";
+import { useAuth } from "../../shared/auth/useAuth";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 import {
   DeviceConnectionType,
   DeviceResponse,
@@ -15,28 +18,11 @@ import {
   deviceApi
 } from "../../features/device/api/deviceApi";
 
-const deviceTypeOptions: Array<{ value: DeviceType; label: string }> = [
-  { value: "HIKVISION", label: "Hikvision" },
-  { value: "ZKTECO", label: "ZKTeco" },
-  { value: "SUPREMA", label: "Suprema" },
-  { value: "QR", label: "QR" },
-  { value: "MOBILE", label: "Mobile" }
-];
-
-const connectionTypeOptions: Array<{ value: DeviceConnectionType; label: string }> = [
-  { value: "PUSH", label: "Push" },
-  { value: "POLLING", label: "Polling" },
-  { value: "ALERT_STREAM", label: "Alert stream" }
-];
-
-const statusOptions: Array<{ value: DeviceStatus; label: string }> = [
-  { value: "ACTIVE", label: "Active" },
-  { value: "INACTIVE", label: "Inactive" }
-];
-
 export default function DevicesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const canManageDevices = hasPermission(user, "MANAGE_DEVICES");
   const [companyId, setCompanyId] = useState<string>();
   const [branchId, setBranchId] = useState<string>();
   const [type, setType] = useState<DeviceType>();
@@ -46,10 +32,10 @@ export default function DevicesPage() {
   const [size, setSize] = useState(10);
   const [rotatedKey, setRotatedKey] = useState<RotateDeviceApiKeyResponse>();
 
-  const companiesQuery = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyApi.listCompanies
-  });
+  const companiesQuery = useAccessibleCompanies();
+  const deviceTypeOptions = useLookupOptions("deviceTypes");
+  const statusOptions = useLookupOptions("deviceStatuses");
+  const connectionTypeOptions = useLookupOptions("deviceConnectionTypes");
 
   useEffect(() => {
     if (!companyId && companiesQuery.data?.length) {
@@ -154,24 +140,28 @@ export default function DevicesPage() {
           <Button icon={<EyeOutlined />} onClick={() => navigate(`/devices/${record.id}`)}>
             View
           </Button>
-          <Button icon={<EditOutlined />} onClick={() => navigate(`/devices/${record.id}/edit`)}>
-            Edit
-          </Button>
-          <Button icon={<KeyOutlined />} loading={rotateMutation.isPending} onClick={() => rotateMutation.mutate(record.id)}>
-            Rotate
-          </Button>
-          <Popconfirm
-            title={record.status === "ACTIVE" ? "Deactivate device?" : "Activate device?"}
-            okText={record.status === "ACTIVE" ? "Deactivate" : "Activate"}
-            okButtonProps={{ danger: record.status === "ACTIVE" }}
-            onConfirm={() =>
-              statusMutation.mutate({ id: record.id, nextStatus: record.status === "ACTIVE" ? "INACTIVE" : "ACTIVE" })
-            }
-          >
-            <Button icon={<PoweroffOutlined />} danger={record.status === "ACTIVE"} loading={statusMutation.isPending}>
-              {record.status === "ACTIVE" ? "Deactivate" : "Activate"}
-            </Button>
-          </Popconfirm>
+          {canManageDevices ? (
+            <>
+              <Button icon={<EditOutlined />} onClick={() => navigate(`/devices/${record.id}/edit`)}>
+                Edit
+              </Button>
+              <Button icon={<KeyOutlined />} loading={rotateMutation.isPending} onClick={() => rotateMutation.mutate(record.id)}>
+                Rotate
+              </Button>
+              <Popconfirm
+                title={record.status === "ACTIVE" ? "Deactivate device?" : "Activate device?"}
+                okText={record.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                okButtonProps={{ danger: record.status === "ACTIVE" }}
+                onConfirm={() =>
+                  statusMutation.mutate({ id: record.id, nextStatus: record.status === "ACTIVE" ? "INACTIVE" : "ACTIVE" })
+                }
+              >
+                <Button icon={<PoweroffOutlined />} danger={record.status === "ACTIVE"} loading={statusMutation.isPending}>
+                  {record.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                </Button>
+              </Popconfirm>
+            </>
+          ) : null}
         </Space>
       )
     }
@@ -184,9 +174,11 @@ export default function DevicesPage() {
           <Typography.Title level={3}>Devices</Typography.Title>
           <Typography.Text type="secondary">Manage biometric and attendance devices.</Typography.Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate("/devices/new")}>
-          Create Device
-        </Button>
+        {canManageDevices ? (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate("/devices/new")}>
+            Create Device
+          </Button>
+        ) : null}
       </div>
 
       <div className="filter-bar wrap">
@@ -214,13 +206,22 @@ export default function DevicesPage() {
           options={(branchesQuery.data ?? []).map((branch) => ({ value: branch.id, label: branch.name }))}
           className="company-filter"
         />
-        <Select allowClear placeholder="Type" value={type} onChange={setType} options={deviceTypeOptions} className="status-filter" />
+        <Select
+          allowClear
+          placeholder="Type"
+          value={type}
+          onChange={setType}
+          options={deviceTypeOptions.options}
+          loading={deviceTypeOptions.isLoading}
+          className="status-filter"
+        />
         <Select
           allowClear
           placeholder="Status"
           value={status}
           onChange={setStatus}
-          options={statusOptions}
+          options={statusOptions.options}
+          loading={statusOptions.isLoading}
           className="status-filter"
         />
         <Select
@@ -228,7 +229,8 @@ export default function DevicesPage() {
           placeholder="Connection"
           value={connectionType}
           onChange={setConnectionType}
-          options={connectionTypeOptions}
+          options={connectionTypeOptions.options}
+          loading={connectionTypeOptions.isLoading}
           className="company-filter"
         />
       </div>

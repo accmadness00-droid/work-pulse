@@ -4,12 +4,10 @@ import { Alert, Button, Card, Form, Input, InputNumber, Select, Space, Switch, T
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 import {
   CreateDeviceRequest,
-  DeviceConnectionType,
-  DeviceStatus,
-  DeviceType,
   UpdateDeviceRequest,
   deviceApi
 } from "../../features/device/api/deviceApi";
@@ -18,20 +16,6 @@ type DeviceFormValues = CreateDeviceRequest & {
   companyId?: string;
   active?: boolean;
 };
-
-const deviceTypeOptions: Array<{ value: DeviceType; label: string }> = [
-  { value: "HIKVISION", label: "Hikvision" },
-  { value: "ZKTECO", label: "ZKTeco" },
-  { value: "SUPREMA", label: "Suprema" },
-  { value: "QR", label: "QR" },
-  { value: "MOBILE", label: "Mobile" }
-];
-
-const connectionTypeOptions: Array<{ value: DeviceConnectionType; label: string }> = [
-  { value: "PUSH", label: "Push" },
-  { value: "POLLING", label: "Polling" },
-  { value: "ALERT_STREAM", label: "Alert stream" }
-];
 
 function cleanText(value?: string) {
   const next = value?.trim();
@@ -60,10 +44,9 @@ export default function DeviceFormPage() {
   const isEdit = Boolean(id);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>();
 
-  const companiesQuery = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyApi.listCompanies
-  });
+  const companiesQuery = useAccessibleCompanies();
+  const deviceTypeOptions = useLookupOptions("deviceTypes");
+  const connectionTypeOptions = useLookupOptions("deviceConnectionTypes");
 
   const deviceQuery = useQuery({
     queryKey: ["devices", "detail", id],
@@ -213,14 +196,14 @@ export default function DeviceFormPage() {
 
           <div className="form-grid two">
             <Form.Item name="type" label="Type" rules={[{ required: true, message: "Type is required" }]}>
-              <Select options={deviceTypeOptions} />
+              <Select options={deviceTypeOptions.options} loading={deviceTypeOptions.isLoading} />
             </Form.Item>
             <Form.Item
               name="connectionType"
               label="Connection type"
               rules={[{ required: true, message: "Connection type is required" }]}
             >
-              <Select options={connectionTypeOptions} />
+              <Select options={connectionTypeOptions.options} loading={connectionTypeOptions.isLoading} />
             </Form.Item>
           </div>
 

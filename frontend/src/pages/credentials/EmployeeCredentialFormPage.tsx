@@ -5,19 +5,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   CreateEmployeeCredentialRequest,
-  CredentialType,
   employeeCredentialApi
 } from "../../features/employeeCredential/api/employeeCredentialApi";
 import { employeeApi } from "../../features/employee/api/employeeApi";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 
 type CredentialFormValues = CreateEmployeeCredentialRequest;
-
-const credentialTypeOptions: Array<{ value: CredentialType; label: string }> = [
-  { value: "CARD", label: "Card" },
-  { value: "FACE", label: "Face" },
-  { value: "FINGERPRINT", label: "Fingerprint" },
-  { value: "QR", label: "QR" }
-];
 
 export default function EmployeeCredentialFormPage() {
   const [form] = Form.useForm<CredentialFormValues>();
@@ -25,6 +18,7 @@ export default function EmployeeCredentialFormPage() {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const [employeeSearch, setEmployeeSearch] = useState("");
+  const credentialTypeOptions = useLookupOptions("credentialTypes");
 
   const employeesQuery = useQuery({
     queryKey: ["employees", "credential-form-select", employeeSearch],
@@ -92,7 +86,7 @@ export default function EmployeeCredentialFormPage() {
             label="Credential type"
             rules={[{ required: true, message: "Credential type is required" }]}
           >
-            <Select options={credentialTypeOptions} />
+            <Select options={credentialTypeOptions.options} loading={credentialTypeOptions.isLoading} />
           </Form.Item>
 
           <Form.Item name="externalId" label="External ID" rules={[{ required: true, message: "External ID is required" }]}>

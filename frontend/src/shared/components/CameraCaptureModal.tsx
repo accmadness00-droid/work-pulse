@@ -15,34 +15,54 @@ export default function CameraCaptureModal({ open, title, confirmText, loading, 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const requestRef = useRef(0);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const stopCamera = useCallback(() => {
+    requestRef.current += 1;
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     setReady(false);
   }, []);
 
   const startCamera = useCallback(async () => {
+    const requestId = ++requestRef.current;
     setError(null);
+    setReady(false);
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
       });
-      stopCamera();
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+      if (requestId !== requestRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
       }
+      streamRef.current = stream;
+      const video = videoRef.current;
+      if (!video) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      video.srcObject = stream;
+      await video.play();
+      if (requestId !== requestRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      setError(null);
       setReady(true);
     } catch {
+      if (requestId !== requestRef.current) {
+        return;
+      }
       setReady(false);
       setError("Camera permission is required");
     }
-  }, [stopCamera]);
+  }, []);
 
   useEffect(() => {
     if (open) {

@@ -20,7 +20,8 @@ import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 import {
   CreateEmployeeRequest,
   EmployeeResponse,
@@ -97,10 +98,8 @@ export default function EmployeeFormPage() {
   const isEdit = Boolean(id);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>();
 
-  const companiesQuery = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyApi.listCompanies
-  });
+  const companiesQuery = useAccessibleCompanies();
+  const employmentTypeOptions = useLookupOptions("employeeEmploymentTypes");
 
   const employeeQuery = useQuery({
     queryKey: ["employees", "detail", id],
@@ -345,14 +344,7 @@ export default function EmployeeFormPage() {
 
           <div className="form-grid two">
             <Form.Item name="employmentType" label="Employment type">
-              <Select
-                options={[
-                  { value: "FULL_TIME", label: "Full time" },
-                  { value: "PART_TIME", label: "Part time" },
-                  { value: "CONTRACT", label: "Contract" },
-                  { value: "INTERN", label: "Intern" }
-                ]}
-              />
+              <Select options={employmentTypeOptions.options} loading={employmentTypeOptions.isLoading} />
             </Form.Item>
 
             <Form.Item name="salary" label="Salary">

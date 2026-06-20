@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../api/axiosInstance";
+import { defaultPathForRole, type Permission, type UserRole } from "./authorization";
 import { tokenStorage } from "./tokenStorage";
 
 type ApiResponse<T> = {
@@ -17,13 +18,14 @@ type AuthResponse = {
   tokenType: string;
 };
 
-type MeResponse = {
+export type MeResponse = {
   id: string;
   email: string;
-  role: string;
+  role: UserRole;
   companyId: string | null;
   branchId: string | null;
   employeeId: string | null;
+  permissions: Permission[];
 };
 
 type LoginRequest = {
@@ -56,8 +58,6 @@ export function useAuth() {
     retry: false
   });
 
-  const homePath = (role?: string | null) => (role === "EMPLOYEE" ? "/attendance/camera" : "/dashboard");
-
   const loginMutation = useMutation<AuthResponse, AxiosError<ApiResponse<unknown>>, LoginRequest>({
     mutationFn: login,
     onSuccess: async (data) => {
@@ -66,7 +66,7 @@ export function useAuth() {
         queryKey: ["auth", "me"],
         queryFn: me
       });
-      navigate(homePath(currentUser.role), { replace: true });
+      navigate(defaultPathForRole(currentUser.role), { replace: true });
     }
   });
 
@@ -85,7 +85,7 @@ export function useAuth() {
 
   return {
     user: meQuery.data,
-    homePath: homePath(meQuery.data?.role),
+    homePath: defaultPathForRole(meQuery.data?.role),
     isAuthenticated: tokenStorage.hasAccessToken(),
     isLoadingUser: meQuery.isLoading,
     login: loginMutation.mutate,

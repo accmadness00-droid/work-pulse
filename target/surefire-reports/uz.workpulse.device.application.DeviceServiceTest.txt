@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: uz.workpulse.device.application.DeviceServiceTest
 -------------------------------------------------------------------------------
-Tests run: 4, Failures: 0, Errors: 4, Skipped: 0, Time elapsed: 0.003 s <<< FAILURE! -- in uz.workpulse.device.application.DeviceServiceTest
-uz.workpulse.device.application.DeviceServiceTest.rotateApiKeyStoresHashAndReturnsPlainOnce -- Time elapsed: 0 s <<< ERROR!
+Tests run: 4, Failures: 0, Errors: 4, Skipped: 0, Time elapsed: 0.006 s <<< FAILURE! -- in uz.workpulse.device.application.DeviceServiceTest
+uz.workpulse.device.application.DeviceServiceTest.rotateApiKeyStoresHashAndReturnsPlainOnce -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)
@@ -136,7 +136,7 @@ Caused by: java.lang.IllegalStateException: Could not self-attach to current VM 
 	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.<clinit>(InlineDelegateByteBuddyMockMaker.java:133)
 	... 14 more
 
-uz.workpulse.device.application.DeviceServiceTest.createDeviceHappyPath -- Time elapsed: 0 s <<< ERROR!
+uz.workpulse.device.application.DeviceServiceTest.createDeviceHappyPath -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)

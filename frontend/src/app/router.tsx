@@ -1,8 +1,13 @@
 import { Suspense, lazy } from "react";
 import type { ReactElement } from "react";
 import { Navigate, createBrowserRouter } from "react-router-dom";
+import type { Permission } from "../shared/auth/authorization";
+import { defaultPathForRole } from "../shared/auth/authorization";
+import { useAuth } from "../shared/auth/useAuth";
 import AppLayout from "../shared/components/AppLayout";
+import PermissionRoute from "../shared/components/PermissionRoute";
 import ProtectedRoute from "../shared/components/ProtectedRoute";
+import { useTranslation } from "../shared/i18n/I18nProvider";
 
 const LoginPage = lazy(() => import("../pages/LoginPage"));
 const DashboardPage = lazy(() => import("../pages/DashboardPage"));
@@ -37,7 +42,21 @@ const BranchReportPage = lazy(() => import("../pages/reports/BranchReportPage"))
 const PayrollPage = lazy(() => import("../pages/payroll/PayrollPage"));
 
 function routePage(element: ReactElement) {
-  return <Suspense fallback={<div className="route-loading">Loading...</div>}>{element}</Suspense>;
+  return <Suspense fallback={<RouteLoading />}>{element}</Suspense>;
+}
+
+function RouteLoading() {
+  const { t } = useTranslation();
+  return <div className="route-loading">{t("app.loading")}</div>;
+}
+
+function permissionPage(permission: Permission, element: ReactElement) {
+  return <PermissionRoute permission={permission}>{routePage(element)}</PermissionRoute>;
+}
+
+function HomeRedirect() {
+  const { user } = useAuth();
+  return <Navigate to={defaultPathForRole(user?.role)} replace />;
 }
 
 export const router = createBrowserRouter([
@@ -55,143 +74,143 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />
+        element: <HomeRedirect />
       },
       {
         path: "dashboard",
-        element: routePage(<DashboardPage />)
+        element: permissionPage("VIEW_DASHBOARD", <DashboardPage />)
       },
       {
         path: "companies",
-        element: routePage(<CompaniesPage />)
+        element: permissionPage("MANAGE_COMPANIES", <CompaniesPage />)
       },
       {
         path: "companies/new",
-        element: routePage(<CompanyFormPage />)
+        element: permissionPage("MANAGE_COMPANIES", <CompanyFormPage />)
       },
       {
         path: "companies/:id/edit",
-        element: routePage(<CompanyFormPage />)
+        element: permissionPage("VIEW_COMPANY_SETTINGS", <CompanyFormPage />)
       },
       {
         path: "companies/:id/settings",
-        element: routePage(<CompanySettingsPage />)
+        element: permissionPage("VIEW_COMPANY_SETTINGS", <CompanySettingsPage />)
       },
       {
         path: "branches",
-        element: routePage(<BranchesPage />)
+        element: permissionPage("MANAGE_BRANCHES", <BranchesPage />)
       },
       {
         path: "branches/new",
-        element: routePage(<BranchFormPage />)
+        element: permissionPage("MANAGE_BRANCHES", <BranchFormPage />)
       },
       {
         path: "branches/:id/edit",
-        element: routePage(<BranchFormPage />)
+        element: permissionPage("MANAGE_BRANCHES", <BranchFormPage />)
       },
       {
         path: "branches/:id/schedule",
-        element: routePage(<BranchSchedulePage />)
+        element: permissionPage("MANAGE_BRANCHES", <BranchSchedulePage />)
       },
       {
         path: "employees",
-        element: routePage(<EmployeesPage />)
+        element: permissionPage("VIEW_EMPLOYEES", <EmployeesPage />)
       },
       {
         path: "employees/new",
-        element: routePage(<EmployeeFormPage />)
+        element: permissionPage("CREATE_EMPLOYEES", <EmployeeFormPage />)
       },
       {
         path: "employees/:id",
-        element: routePage(<EmployeeDetailPage />)
+        element: permissionPage("VIEW_EMPLOYEES", <EmployeeDetailPage />)
       },
       {
         path: "employees/:id/edit",
-        element: routePage(<EmployeeFormPage />)
+        element: permissionPage("VIEW_EMPLOYEES", <EmployeeFormPage />)
       },
       {
         path: "devices",
-        element: routePage(<DevicesPage />)
+        element: permissionPage("VIEW_DEVICES", <DevicesPage />)
       },
       {
         path: "devices/new",
-        element: routePage(<DeviceFormPage />)
+        element: permissionPage("MANAGE_DEVICES", <DeviceFormPage />)
       },
       {
         path: "devices/:id",
-        element: routePage(<DeviceDetailPage />)
+        element: permissionPage("VIEW_DEVICES", <DeviceDetailPage />)
       },
       {
         path: "devices/:id/edit",
-        element: routePage(<DeviceFormPage />)
+        element: permissionPage("MANAGE_DEVICES", <DeviceFormPage />)
       },
       {
         path: "credentials",
-        element: routePage(<EmployeeCredentialsPage />)
+        element: permissionPage("MANAGE_CREDENTIALS", <EmployeeCredentialsPage />)
       },
       {
         path: "credentials/new",
-        element: routePage(<EmployeeCredentialFormPage />)
+        element: permissionPage("MANAGE_CREDENTIALS", <EmployeeCredentialFormPage />)
       },
       {
         path: "attendance",
-        element: routePage(<AttendancePage />)
+        element: permissionPage("VIEW_ATTENDANCE", <AttendancePage />)
       },
       {
         path: "attendance/manual",
-        element: routePage(<ManualCheckPage />)
+        element: permissionPage("VIEW_ATTENDANCE", <ManualCheckPage />)
       },
       {
         path: "attendance/camera",
-        element: routePage(<CameraCheckPage />)
+        element: permissionPage("CAMERA_ATTENDANCE", <CameraCheckPage />)
       },
       {
         path: "attendance/employee",
-        element: routePage(<EmployeeAttendanceHistoryPage />)
+        element: permissionPage("VIEW_ATTENDANCE", <EmployeeAttendanceHistoryPage />)
       },
       {
         path: "attendance/:id",
-        element: routePage(<AttendanceDetailPage />)
+        element: permissionPage("VIEW_ATTENDANCE", <AttendanceDetailPage />)
       },
       {
         path: "device-events",
-        element: routePage(<DeviceEventsPage />)
+        element: permissionPage("VIEW_DEVICE_EVENTS", <DeviceEventsPage />)
       },
       {
         path: "device-events/new",
-        element: routePage(<IngestDeviceEventPage />)
+        element: permissionPage("VIEW_DEVICE_EVENTS", <IngestDeviceEventPage />)
       },
       {
         path: "device-events/unprocessed",
-        element: routePage(<UnprocessedDeviceEventsPage />)
+        element: permissionPage("VIEW_DEVICE_EVENTS", <UnprocessedDeviceEventsPage />)
       },
       {
         path: "device-events/:id",
-        element: routePage(<DeviceEventDetailPage />)
+        element: permissionPage("VIEW_DEVICE_EVENTS", <DeviceEventDetailPage />)
       },
       {
         path: "reports",
-        element: routePage(<ReportsPage />)
+        element: permissionPage("VIEW_REPORTS", <ReportsPage />)
       },
       {
         path: "reports/daily",
-        element: routePage(<DailyReportPage />)
+        element: permissionPage("VIEW_REPORTS", <DailyReportPage />)
       },
       {
         path: "reports/monthly",
-        element: routePage(<MonthlyReportPage />)
+        element: permissionPage("VIEW_REPORTS", <MonthlyReportPage />)
       },
       {
         path: "reports/employee",
-        element: routePage(<EmployeeReportPage />)
+        element: permissionPage("VIEW_REPORTS", <EmployeeReportPage />)
       },
       {
         path: "reports/branch",
-        element: routePage(<BranchReportPage />)
+        element: permissionPage("VIEW_REPORTS", <BranchReportPage />)
       },
       {
         path: "reports/payroll",
-        element: routePage(<PayrollPage />)
+        element: permissionPage("VIEW_PAYROLL", <PayrollPage />)
       },
       {
         path: "payroll",

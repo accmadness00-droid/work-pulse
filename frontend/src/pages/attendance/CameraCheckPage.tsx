@@ -12,6 +12,34 @@ type LocationState = {
   accuracyMeters?: number | null;
 };
 
+function cameraErrorMessage(error: unknown) {
+  if (!window.isSecureContext) {
+    return "Camera requires a secure HTTPS connection";
+  }
+  if (error instanceof DOMException) {
+    if (error.name === "NotFoundError") {
+      return "No camera was found on this device";
+    }
+    if (error.name === "NotReadableError") {
+      return "Camera is already in use by another application";
+    }
+  }
+  return "Camera permission is required";
+}
+
+function locationErrorMessage(error: GeolocationPositionError) {
+  if (!window.isSecureContext) {
+    return "Location requires a secure HTTPS connection";
+  }
+  if (error.code === error.TIMEOUT) {
+    return "Location request timed out. Please try again";
+  }
+  if (error.code === error.POSITION_UNAVAILABLE) {
+    return "Current location is unavailable";
+  }
+  return "Location permission is required";
+}
+
 function errorMessage(error: unknown, fallback: string) {
   const maybe = error as { response?: { data?: { message?: string } } };
   return maybe.response?.data?.message ?? fallback;
@@ -22,6 +50,8 @@ export default function CameraCheckPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const cameraRequestRef = useRef(0);
+  const locationRequestRef = useRef(0);
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [location, setLocation] = useState<LocationState | null>(null);
@@ -45,26 +75,58 @@ export default function CameraCheckPage() {
   );
 
   const startCamera = useCallback(async () => {
+    const requestId = ++cameraRequestRef.current;
     setCameraError(null);
+    setCameraReady(false);
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError(window.isSecureContext ? "Camera is not supported by this browser" : "Camera requires a secure HTTPS connection");
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
       });
-      streamRef.current?.getTracks().forEach((track) => track.stop());
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+
+      if (requestId !== cameraRequestRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
       }
+
+      streamRef.current = stream;
+      const video = videoRef.current;
+      if (!video) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
+      video.srcObject = stream;
+      await video.play();
+
+      if (requestId !== cameraRequestRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
+      setCameraError(null);
       setCameraReady(true);
-    } catch {
+    } catch (error) {
+      if (requestId !== cameraRequestRef.current) {
+        return;
+      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
       setCameraReady(false);
-      setCameraError("Camera permission is required");
+      setCameraError(cameraErrorMessage(error));
     }
   }, []);
 
   const refreshLocation = useCallback(() => {
+    const requestId = ++locationRequestRef.current;
     setLocationError(null);
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not available");
@@ -72,13 +134,23 @@ export default function CameraCheckPage() {
     }
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        if (requestId !== locationRequestRef.current) {
+          return;
+        }
         setLocation({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracyMeters: position.coords.accuracy
         });
+        setLocationError(null);
       },
-      () => setLocationError("Location permission is required"),
+      (error) => {
+        if (requestId !== locationRequestRef.current) {
+          return;
+        }
+        setLocation(null);
+        setLocationError(locationErrorMessage(error));
+      },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 }
     );
   }, []);
@@ -87,7 +159,45 @@ export default function CameraCheckPage() {
     void startCamera();
     refreshLocation();
     return () => {
+      cameraRequestRef.current += 1;
+      locationRequestRef.current += 1;
       streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+  }, [refreshLocation, startCamera]);
+
+  useEffect(() => {
+    if (!navigator.permissions?.query) {
+      return;
+    }
+
+    const removeListeners: Array<() => void> = [];
+    let disposed = false;
+
+    const watchPermission = async (name: "camera" | "geolocation", onGranted: () => void) => {
+      try {
+        const status = await navigator.permissions.query({ name: name as PermissionName });
+        if (disposed) {
+          return;
+        }
+        const handleChange = () => {
+          if (status.state === "granted") {
+            onGranted();
+          }
+        };
+        status.addEventListener("change", handleChange);
+        removeListeners.push(() => status.removeEventListener("change", handleChange));
+      } catch {
+        // Some browsers expose Permissions API without supporting camera queries.
+      }
+    };
+
+    void watchPermission("camera", () => void startCamera());
+    void watchPermission("geolocation", refreshLocation);
+
+    return () => {
+      disposed = true;
+      removeListeners.forEach((removeListener) => removeListener());
     };
   }, [refreshLocation, startCamera]);
 
@@ -151,8 +261,14 @@ export default function CameraCheckPage() {
           <Typography.Title level={3}>Camera Check</Typography.Title>
           <Typography.Text type="secondary">Verify face and branch geofence before attendance is recorded.</Typography.Text>
         </div>
-        <Button icon={<ReloadOutlined />} onClick={refreshLocation}>
-          Refresh Location
+        <Button
+          icon={<ReloadOutlined />}
+          onClick={() => {
+            void startCamera();
+            refreshLocation();
+          }}
+        >
+          Retry Permissions
         </Button>
       </div>
 

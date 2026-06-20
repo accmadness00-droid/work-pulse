@@ -10,21 +10,19 @@ import {
   employeeCredentialApi
 } from "../../features/employeeCredential/api/employeeCredentialApi";
 import { employeeApi } from "../../features/employee/api/employeeApi";
-
-const credentialTypeOptions: Array<{ value: CredentialType; label: string }> = [
-  { value: "CARD", label: "Card" },
-  { value: "FACE", label: "Face" },
-  { value: "FINGERPRINT", label: "Fingerprint" },
-  { value: "QR", label: "QR" }
-];
+import { useAuth } from "../../shared/auth/useAuth";
+import { useLookupOptions } from "../../shared/hooks/useLookups";
 
 export default function EmployeeCredentialsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [employeeSearch, setEmployeeSearch] = useState("");
   const [employeeId, setEmployeeId] = useState<string>();
   const [credentialType, setCredentialType] = useState<CredentialType>();
   const [active, setActive] = useState<boolean | undefined>(true);
+  const credentialTypeOptions = useLookupOptions("credentialTypes");
+  const activeStatusOptions = useLookupOptions("credentialActiveStatuses");
 
   const employeesQuery = useQuery({
     queryKey: ["employees", "credential-select", employeeSearch],
@@ -33,7 +31,8 @@ export default function EmployeeCredentialsPage() {
 
   const credentialsQuery = useQuery({
     queryKey: ["credentials", { employeeId, credentialType, active }],
-    queryFn: () => employeeCredentialApi.listCredentials({ employeeId, credentialType, active })
+    queryFn: () => employeeCredentialApi.listCredentials({ employeeId, credentialType, active }),
+    enabled: user?.role === "SUPER_ADMIN" || Boolean(employeeId)
   });
 
   const employeeById = useMemo(
@@ -153,7 +152,8 @@ export default function EmployeeCredentialsPage() {
           placeholder="Credential type"
           value={credentialType}
           onChange={setCredentialType}
-          options={credentialTypeOptions}
+          options={credentialTypeOptions.options}
+          loading={credentialTypeOptions.isLoading}
           className="company-filter"
         />
         <Select
@@ -161,10 +161,8 @@ export default function EmployeeCredentialsPage() {
           placeholder="Status"
           value={active}
           onChange={setActive}
-          options={[
-            { value: true, label: "Active" },
-            { value: false, label: "Inactive" }
-          ]}
+          options={activeStatusOptions.options}
+          loading={activeStatusOptions.isLoading}
           className="status-filter"
         />
         <Input.Search

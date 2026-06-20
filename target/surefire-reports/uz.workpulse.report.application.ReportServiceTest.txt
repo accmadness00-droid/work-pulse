@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: uz.workpulse.report.application.ReportServiceTest
 -------------------------------------------------------------------------------
-Tests run: 6, Failures: 0, Errors: 6, Skipped: 0, Time elapsed: 0.004 s <<< FAILURE! -- in uz.workpulse.report.application.ReportServiceTest
+Tests run: 6, Failures: 0, Errors: 6, Skipped: 0, Time elapsed: 0.009 s <<< FAILURE! -- in uz.workpulse.report.application.ReportServiceTest
 uz.workpulse.report.application.ReportServiceTest.invalidDateRangeThrowsBusinessException -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
@@ -337,7 +337,7 @@ Caused by: java.lang.IllegalStateException: Could not self-attach to current VM 
 	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.<clinit>(InlineDelegateByteBuddyMockMaker.java:133)
 	... 14 more
 
-uz.workpulse.report.application.ReportServiceTest.monthlyReportAggregatesDailyData -- Time elapsed: 0 s <<< ERROR!
+uz.workpulse.report.application.ReportServiceTest.monthlyReportAggregatesDailyData -- Time elapsed: 0.001 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)

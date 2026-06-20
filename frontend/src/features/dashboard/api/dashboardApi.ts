@@ -6,6 +6,7 @@ import { deviceApi } from "../../device/api/deviceApi";
 import { deviceEventApi } from "../../deviceEvent/api/deviceEventApi";
 import { employeeApi } from "../../employee/api/employeeApi";
 import { reportApi } from "../../report/api/reportApi";
+import type { MeResponse } from "../../../shared/auth/useAuth";
 
 export type DashboardStats = {
   companyId?: string;
@@ -45,18 +46,19 @@ function countTodayStatus(rows: Awaited<ReturnType<typeof attendanceApi.getToday
 }
 
 export const dashboardApi = {
-  async getDashboardStats(): Promise<DashboardStats> {
+  async getDashboardStats(user?: MeResponse): Promise<DashboardStats> {
     const stats: DashboardStats = { ...emptyStats, warnings: [] };
 
-    const companiesResult = await Promise.allSettled([companyApi.listCompanies()]);
+    const companiesResult =
+      user?.role === "SUPER_ADMIN"
+        ? await Promise.allSettled([companyApi.listCompanies()])
+        : [{ status: "fulfilled" as const, value: user?.companyId ? [{ id: user.companyId, name: "Current company" }] : [] }];
     const companies = companiesResult[0].status === "fulfilled" ? companiesResult[0].value : [];
-    if (companiesResult[0].status === "rejected") {
-      stats.warnings.push("Companies could not be loaded");
-    }
 
     stats.companiesCount = companies.length;
-    const companyId = companies[0]?.id;
+    const companyId = user?.companyId ?? companies[0]?.id;
     stats.companyId = companyId;
+    const branchId = user?.role === "BRANCH_MANAGER" ? user.branchId ?? undefined : undefined;
 
     // TODO: replace this frontend aggregation with a backend dashboard aggregate endpoint.
     const monthStart = dayjs().startOf("month").format("YYYY-MM-DD");
@@ -82,11 +84,11 @@ export const dashboardApi = {
       monthlySummaryResult
     ] = await Promise.allSettled([
       branchesPromise,
-      employeeApi.listEmployees({ companyId, page: 0, size: 1 }),
-      deviceApi.listDevices({ status: "ACTIVE", page: 0, size: 1 }),
-      attendanceApi.getToday({ companyId, page: 0, size: 1000 }),
+      employeeApi.listEmployees({ companyId, branchId, page: 0, size: 1 }),
+      deviceApi.listDevices({ branchId, status: "ACTIVE", page: 0, size: 1 }),
+      attendanceApi.getToday({ companyId, branchId, page: 0, size: 1000 }),
       deviceEventApi.listUnprocessed({ page: 0, size: 1 }),
-      companyId ? reportApi.getSummary(companyId, monthStart, today) : Promise.resolve(undefined)
+      companyId ? reportApi.getSummary(companyId, monthStart, today, branchId) : Promise.resolve(undefined)
     ]);
 
     if (branchesResult.status === "fulfilled") {

@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: uz.workpulse.attendance.application.AttendanceServiceTest
 -------------------------------------------------------------------------------
-Tests run: 9, Failures: 0, Errors: 9, Skipped: 0, Time elapsed: 21.39 s <<< FAILURE! -- in uz.workpulse.attendance.application.AttendanceServiceTest
-uz.workpulse.attendance.application.AttendanceServiceTest.processDeviceEventInAndOutWorks -- Time elapsed: 21.36 s <<< ERROR!
+Tests run: 9, Failures: 0, Errors: 9, Skipped: 0, Time elapsed: 21.42 s <<< FAILURE! -- in uz.workpulse.attendance.application.AttendanceServiceTest
+uz.workpulse.attendance.application.AttendanceServiceTest.processDeviceEventInAndOutWorks -- Time elapsed: 21.39 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)
@@ -270,7 +270,7 @@ Caused by: java.lang.IllegalStateException: Could not self-attach to current VM 
 	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.<clinit>(InlineDelegateByteBuddyMockMaker.java:133)
 	... 14 more
 
-uz.workpulse.attendance.application.AttendanceServiceTest.processDeviceEventDuplicateInIsIdempotent -- Time elapsed: 0.001 s <<< ERROR!
+uz.workpulse.attendance.application.AttendanceServiceTest.processDeviceEventDuplicateInIsIdempotent -- Time elapsed: 0 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)
@@ -471,7 +471,7 @@ Caused by: java.lang.IllegalStateException: Could not self-attach to current VM 
 	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.<clinit>(InlineDelegateByteBuddyMockMaker.java:133)
 	... 14 more
 
-uz.workpulse.attendance.application.AttendanceServiceTest.invalidCheckoutTimeThrowsError -- Time elapsed: 0.001 s <<< ERROR!
+uz.workpulse.attendance.application.AttendanceServiceTest.invalidCheckoutTimeThrowsError -- Time elapsed: 0 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)
@@ -538,7 +538,7 @@ Caused by: java.lang.IllegalStateException: Could not self-attach to current VM 
 	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.<clinit>(InlineDelegateByteBuddyMockMaker.java:133)
 	... 14 more
 
-uz.workpulse.attendance.application.AttendanceServiceTest.adminUpdateRecalculatesWorkMinutes -- Time elapsed: 0.001 s <<< ERROR!
+uz.workpulse.attendance.application.AttendanceServiceTest.adminUpdateRecalculatesWorkMinutes -- Time elapsed: 0 s <<< ERROR!
 java.lang.IllegalStateException: Could not initialize plugin: interface org.mockito.plugins.MockMaker (alternate: null)
 	at org.mockito.internal.configuration.plugins.PluginLoader$1.invoke(PluginLoader.java:85)
 	at jdk.proxy2/jdk.proxy2.$Proxy14.isTypeMockable(Unknown Source)

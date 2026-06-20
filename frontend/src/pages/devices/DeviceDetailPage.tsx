@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { branchApi } from "../../features/branch/api/branchApi";
 import { RotateDeviceApiKeyResponse, deviceApi } from "../../features/device/api/deviceApi";
+import { hasPermission } from "../../shared/auth/authorization";
+import { useAuth } from "../../shared/auth/useAuth";
 
 function display(value?: string | number | boolean | null) {
   if (typeof value === "boolean") {
@@ -17,6 +19,8 @@ function display(value?: string | number | boolean | null) {
 export default function DeviceDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const canManageDevice = hasPermission(user, "MANAGE_DEVICES");
   const { id } = useParams();
   const [rotatedKey, setRotatedKey] = useState<RotateDeviceApiKeyResponse>();
 
@@ -60,7 +64,7 @@ export default function DeviceDetailPage() {
           <Typography.Title level={3}>Device Detail</Typography.Title>
           <Typography.Text type="secondary">Connection, branch, and API key status.</Typography.Text>
         </div>
-        {device ? (
+        {device && canManageDevice ? (
           <Space>
             <Button icon={<KeyOutlined />} loading={rotateMutation.isPending} onClick={() => rotateMutation.mutate()}>
               Rotate API Key

@@ -2,6 +2,7 @@ uz/workpulse/device/application/EmployeeHikvisionPhotoService.class
 uz/workpulse/branch/api/package-info.class
 uz/workpulse/report/application/package-info.class
 uz/workpulse/attendance/dto/package-info.class
+uz/workpulse/auth/domain/Permission.class
 uz/workpulse/device/api/package-info.class
 uz/workpulse/auth/application/package-info.class
 uz/workpulse/auth/dto/package-info.class
@@ -9,6 +10,7 @@ uz/workpulse/payroll/dto/PayrollAdjustmentResponse.class
 uz/workpulse/report/api/package-info.class
 uz/workpulse/company/api/package-info.class
 uz/workpulse/payroll/dto/UpdatePayrollAdjustmentRequest.class
+uz/workpulse/auth/application/PermissionCatalog$1.class
 uz/workpulse/payroll/dto/PayrollPolicyResponse.class
 uz/workpulse/employee/api/package-info.class
 uz/workpulse/report/dto/package-info.class
@@ -17,6 +19,8 @@ uz/workpulse/company/dto/package-info.class
 uz/workpulse/device/adapter/HikvisionIsapiClient$FaceDataRecord.class
 uz/workpulse/payroll/application/PayrollService.class
 uz/workpulse/employee/dto/package-info.class
+uz/workpulse/shared/lookup/dto/LookupOptionResponse.class
+uz/workpulse/shared/lookup/api/LookupController.class
 uz/workpulse/device/dto/package-info.class
 uz/workpulse/auth/api/package-info.class
 uz/workpulse/device/adapter/dto/package-info.class
@@ -25,7 +29,9 @@ uz/workpulse/payroll/api/PayrollController.class
 uz/workpulse/payroll/infrastructure/PayrollReadRepository.class
 uz/workpulse/attendance/application/AttendanceFacade$CameraVerificationAction.class
 uz/workpulse/company/application/package-info.class
+uz/workpulse/auth/application/PermissionCatalog.class
 uz/workpulse/payroll/infrastructure/PayrollReadRepository$PayrollEmployeeProjection.class
+uz/workpulse/shared/lookup/dto/LookupResponse.class
 uz/workpulse/attendance/api/package-info.class
 uz/workpulse/device/dto/HikvisionPhotoSyncResponse.class
 uz/workpulse/device/dto/HikvisionPhotoSyncResult.class

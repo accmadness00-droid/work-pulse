@@ -1,24 +1,22 @@
 import { DownloadOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Alert, Button, Card, DatePicker, Select, Space, Tabs, Typography, message } from "antd";
+import { Alert, Button, Card, DatePicker, Select, Space, Typography, message } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
 import { reportApi } from "../../features/report/api/reportApi";
-import { SummaryCards } from "./reportComponents";
+import { useAuth } from "../../shared/auth/useAuth";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { ReportNavigation, SummaryCards } from "./reportComponents";
 
 export default function ReportsPage() {
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const canGenerateSnapshots = user?.role === "SUPER_ADMIN" || user?.role === "COMPANY_ADMIN";
   const [companyId, setCompanyId] = useState<string>();
   const [branchId, setBranchId] = useState<string>();
   const [range, setRange] = useState<[Dayjs | null, Dayjs | null]>([dayjs().subtract(7, "day"), dayjs()]);
 
-  const companiesQuery = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyApi.listCompanies
-  });
+  const companiesQuery = useAccessibleCompanies();
 
   useEffect(() => {
     if (!companyId && companiesQuery.data?.length) {
@@ -73,33 +71,26 @@ export default function ReportsPage() {
           <Typography.Text type="secondary">Summary report and export actions.</Typography.Text>
         </div>
         <Space>
-          <Button icon={<ThunderboltOutlined />} loading={dailySnapshotMutation.isPending} onClick={() => dailySnapshotMutation.mutate()}>
-            Generate Daily Snapshot
-          </Button>
-          <Button icon={<ThunderboltOutlined />} loading={monthlySnapshotMutation.isPending} onClick={() => monthlySnapshotMutation.mutate()}>
-            Generate Monthly Snapshot
-          </Button>
+          {canGenerateSnapshots ? (
+            <>
+              <Button icon={<ThunderboltOutlined />} loading={dailySnapshotMutation.isPending} onClick={() => dailySnapshotMutation.mutate()}>
+                Generate Daily Snapshot
+              </Button>
+              <Button icon={<ThunderboltOutlined />} loading={monthlySnapshotMutation.isPending} onClick={() => monthlySnapshotMutation.mutate()}>
+                Generate Monthly Snapshot
+              </Button>
+            </>
+          ) : null}
           <Button icon={<DownloadOutlined />} loading={exportMutation.isPending} onClick={() => exportMutation.mutate()}>
             Export Excel
           </Button>
         </Space>
       </div>
 
+      <ReportNavigation />
+
       <Card>
         <Space direction="vertical" size={16} className="page-stack">
-          <Tabs
-            items={[
-              { key: "summary", label: "Summary" },
-              { key: "daily", label: "Daily" },
-              { key: "monthly", label: "Monthly" },
-              { key: "employee", label: "Employee" },
-              { key: "branch", label: "Branch" },
-              { key: "payroll", label: "Payroll" }
-            ]}
-            activeKey="summary"
-            onChange={(key) => key !== "summary" && navigate(`/reports/${key}`)}
-          />
-
           <div className="filter-bar wrap">
             <Select
               placeholder="Company"

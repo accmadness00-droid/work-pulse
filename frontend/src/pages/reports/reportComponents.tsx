@@ -1,11 +1,52 @@
-import { Card, Empty, Table, Tag } from "antd";
+import { Card, Empty, Table, Tabs, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   AttendanceSummaryResponse,
   ReportSessionRow,
   formatMinutes
 } from "../../features/report/api/reportApi";
+import type { Permission } from "../../shared/auth/authorization";
+import { hasPermission } from "../../shared/auth/authorization";
+import { useAuth } from "../../shared/auth/useAuth";
+
+const reportTabs = [
+  { key: "summary", label: "Summary", path: "/reports", permission: "VIEW_REPORTS" },
+  { key: "daily", label: "Daily", path: "/reports/daily", permission: "VIEW_REPORTS" },
+  { key: "monthly", label: "Monthly", path: "/reports/monthly", permission: "VIEW_REPORTS" },
+  { key: "employee", label: "Employee", path: "/reports/employee", permission: "VIEW_REPORTS" },
+  { key: "branch", label: "Branch", path: "/reports/branch", permission: "VIEW_REPORTS" },
+  { key: "payroll", label: "Payroll", path: "/reports/payroll", permission: "VIEW_PAYROLL" }
+] satisfies Array<{
+  key: string;
+  label: string;
+  path: string;
+  permission: Permission;
+}>;
+
+export function ReportNavigation() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const visibleTabs = reportTabs.filter((tab) => hasPermission(user, tab.permission));
+  const activeTab = visibleTabs.find((tab) => tab.path === location.pathname)?.key ?? visibleTabs[0]?.key;
+
+  return (
+    <Card className="report-navigation-card">
+      <Tabs
+        activeKey={activeTab}
+        items={visibleTabs.map(({ key, label }) => ({ key, label }))}
+        onChange={(key) => {
+          const destination = visibleTabs.find((tab) => tab.key === key);
+          if (destination && destination.path !== location.pathname) {
+            navigate(destination.path);
+          }
+        }}
+      />
+    </Card>
+  );
+}
 
 export function SummaryCards({ summary }: { summary?: AttendanceSummaryResponse }) {
   const items = [

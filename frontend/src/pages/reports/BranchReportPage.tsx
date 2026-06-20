@@ -4,16 +4,16 @@ import { Alert, Button, Card, DatePicker, Select, Space, Typography, message } f
 import dayjs, { Dayjs } from "dayjs";
 import { useEffect, useState } from "react";
 import { branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
 import { reportApi } from "../../features/report/api/reportApi";
-import { ReportSessionTable, SummaryCards } from "./reportComponents";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
+import { ReportNavigation, ReportSessionTable, SummaryCards } from "./reportComponents";
 
 export default function BranchReportPage() {
   const [companyId, setCompanyId] = useState<string>();
   const [branchId, setBranchId] = useState<string>();
   const [range, setRange] = useState<[Dayjs | null, Dayjs | null]>([dayjs().startOf("month"), dayjs()]);
 
-  const companiesQuery = useQuery({ queryKey: ["companies"], queryFn: companyApi.listCompanies });
+  const companiesQuery = useAccessibleCompanies();
 
   useEffect(() => {
     if (!companyId && companiesQuery.data?.length) {
@@ -53,6 +53,8 @@ export default function BranchReportPage() {
           Export Branch Excel
         </Button>
       </div>
+
+      <ReportNavigation />
 
       <Card>
         <div className="filter-bar wrap">

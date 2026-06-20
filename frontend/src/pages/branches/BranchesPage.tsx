@@ -5,17 +5,14 @@ import type { ColumnsType } from "antd/es/table";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { branchApi, BranchResponse } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
 
 export default function BranchesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [companyId, setCompanyId] = useState<string>();
 
-  const companiesQuery = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyApi.listCompanies
-  });
+  const companiesQuery = useAccessibleCompanies();
 
   useEffect(() => {
     if (!companyId && companiesQuery.data?.length) {

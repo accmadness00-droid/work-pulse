@@ -26,7 +26,9 @@
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/auth/application/DevAuthSeed.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/auth/application/JwtService.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/auth/application/PasswordService.java
+/Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/auth/application/PermissionCatalog.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/auth/application/package-info.java
+/Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/auth/domain/Permission.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/auth/domain/RefreshToken.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/auth/domain/User.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/auth/dto/AuthResponse.java
@@ -193,6 +195,9 @@
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/file/FileStorageProperties.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/file/FileStorageService.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/file/StoredFile.java
+/Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/lookup/api/LookupController.java
+/Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/lookup/dto/LookupOptionResponse.java
+/Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/lookup/dto/LookupResponse.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/response/ApiResponse.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/response/FieldErrorDetail.java
 /Users/macstore.uz/project/work-pulse/backend/src/main/java/uz/workpulse/shared/security/AccessControlService.java

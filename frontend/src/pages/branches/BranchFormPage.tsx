@@ -4,7 +4,7 @@ import { Alert, Button, Card, Form, Input, InputNumber, Select, Space, Typograph
 import { useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { CreateBranchRequest, branchApi } from "../../features/branch/api/branchApi";
-import { companyApi } from "../../features/company/api/companyApi";
+import { useAccessibleCompanies } from "../../shared/hooks/useAccessibleCompanies";
 
 type BranchFormValues = CreateBranchRequest;
 
@@ -16,10 +16,7 @@ export default function BranchFormPage() {
   const [searchParams] = useSearchParams();
   const isEdit = Boolean(id);
 
-  const companiesQuery = useQuery({
-    queryKey: ["companies"],
-    queryFn: companyApi.listCompanies
-  });
+  const companiesQuery = useAccessibleCompanies();
 
   const branchQuery = useQuery({
     queryKey: ["branches", "detail", id],
